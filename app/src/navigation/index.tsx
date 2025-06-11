@@ -57,6 +57,7 @@ const AppNavigator = () => {
 
     switch (effectiveState.state) {
       case 'QUESTION_PRE':
+      
         // Allow navigation to Prepare only if not already there
         if (currentRoute !== 'Prepare') {
           console.log('Navigating to Prepare screen based on QUESTION_PRE state');

@@ -4,20 +4,174 @@ import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../context/AppContext';
 import { usePlayerState } from '../hooks/usePlayerState';
 import { useWebSocketContext } from '../context/WebSocketContext';
+import { useTheme } from '../theme';
 import { useTiersData, getAppTier } from '../hooks/useTierState';
 import { AppTierType, iQuizSate, iCheckMessage, PlayerDataType } from '../types';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
 import * as FileSystem from 'expo-file-system';
+import { ConnectionStatus } from '../components/ConnectionStatus';
 
 const PrepareScreen = () => {
   const { t } = useTranslation();
   const { seatNumber, serverIP } = useAppContext();
   const { playerData, isLoading: isLoadingPlayer, error: playerError, refetchPlayer } = usePlayerState();
-  const { quizState, status: wsStatus, sendMessage } = useWebSocketContext();
+  const { theme } = useTheme();
+  
+  // Use both WebSocket and SSE contexts
+  const { quizState: wsQuizState, status: wsStatus, sendMessage } = useWebSocketContext();
+  
   const { tiersData, isLoading: isLoadingTiers, error: tiersError } = useTiersData();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList, 'Prepare'>>();
+
+  // Create styles using theme
+  const styles = StyleSheet.create({
+    container: {
+      ...theme.components.container,
+      // display: 'flex',
+      // flex: 1,
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      // gap: theme.spacing.md,
+    },
+    headerContainer: {
+      ...theme.components.card,
+      position: 'absolute',
+      top: theme.spacing.xl,
+      left: theme.spacing.md,
+      right: theme.spacing.md,
+      alignItems: 'center',
+      backgroundColor: `${theme.colors.card}CC`, // Semi-transparent
+    },
+    headerText: {
+      ...theme.components.text.body,
+      fontSize: theme.fontSize.lg,
+      fontWeight: theme.fontWeight.bold,
+      color: theme.colors.cardForeground,
+    },
+    contentContainer: {
+      justifyContent: 'space-evenly',
+      alignItems: 'center',
+      width: '100%',
+      gap: theme.spacing.lg,
+      // backgroundColor: theme.colors.accent,
+    },
+    prepareText: {
+      ...theme.components.text.heading,
+      fontSize: theme.fontSize['2xl'],
+      textAlign: 'center',
+      marginBottom: theme.spacing.md,
+      color: theme.colors.primary,
+    },
+    questionLabelText: {
+      ...theme.components.text.body,
+      fontSize: theme.fontSize.lg,
+      textAlign: 'center',
+      marginBottom: theme.spacing.lg,
+    },
+    imagePlaceholder: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: theme.colors.card,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.borderRadius.md,
+    },
+    questionImage: {
+      width: '90%',
+      aspectRatio: 16 / 9,
+      borderRadius: theme.borderRadius.md,
+      marginBottom: theme.spacing.lg,
+    },
+    statusContainer: {
+      alignItems: 'center',
+      marginBottom: theme.spacing.lg,
+      padding: theme.spacing.lg,
+    },
+    statusText: {
+      ...theme.components.text.body,
+      fontSize: theme.fontSize.lg,
+      marginTop: theme.spacing.sm,
+      textAlign: 'center',
+    },
+    errorText: {
+      ...theme.components.text.error,
+      fontSize: theme.fontSize.lg,
+      textAlign: 'center',
+      marginBottom: theme.spacing.sm,
+    },
+    imageStatusContainer: {
+      width: '90%',
+      aspectRatio: 16 / 9,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: theme.spacing.lg,
+      padding: theme.spacing.sm,
+    },
+    imageStatusText: {
+      ...theme.components.text.body,
+      marginTop: theme.spacing.sm,
+      fontSize: theme.fontSize.base,
+    },
+    debugStateText: {
+      ...theme.components.text.muted,
+      marginTop: theme.spacing.sm,
+    },
+    warningText: {
+      ...theme.components.text.body,
+      fontSize: theme.fontSize.lg,
+      color: theme.colors.destructive,
+      textAlign: 'center',
+      marginTop: theme.spacing.sm,
+    },
+    errorDetailsText: {
+      ...theme.components.text.body,
+      marginTop: theme.spacing.xs,
+      fontSize: theme.fontSize.base,
+      color: theme.colors.destructive,
+      textAlign: 'center',
+    },
+    connectionStatus: {
+      position: 'absolute',
+      bottom: theme.spacing.md,
+      left: theme.spacing.md,
+      right: theme.spacing.md,
+      backgroundColor: `${theme.colors.card}F0`, // Semi-transparent
+      padding: theme.spacing.sm,
+      borderRadius: theme.borderRadius.md,
+    },
+    connectionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: theme.spacing.xs,
+    },
+    statusIndicator: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      marginRight: theme.spacing.xs,
+    },
+    connectionText: {
+      ...theme.components.text.muted,
+      fontSize: theme.fontSize.sm,
+    },
+    connectionError: {
+      ...theme.components.text.error,
+      fontSize: theme.fontSize.xs,
+      marginTop: theme.spacing.xs,
+    },
+  });
+
+  // Determine which quiz state to use (prioritize SSE, fallback to WebSocket)
+  const quizState = useMemo(() => {
+    // For now, only WebSocket provides quiz state since SSE only provides timer
+    if (wsStatus === 'connected' && wsQuizState) {
+      return wsQuizState;
+    }
+    return null;
+  }, [wsStatus, wsQuizState]);
 
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
@@ -30,6 +184,7 @@ const PrepareScreen = () => {
   // Determine overall loading state
   const isLoading = useMemo(() => {
     return isLoadingPlayer || isLoadingTiers || (wsStatus === 'connecting' && !quizState);
+    
   }, [isLoadingPlayer, isLoadingTiers, wsStatus, !!quizState]);
 
   // Listen for WebSocket messages that require updates
@@ -40,23 +195,23 @@ const PrepareScreen = () => {
   }, [quizState?.state]);
 
   // Navigate to QuestionScreen when server sends QUESTION_OPEN
-  useEffect(() => {
-    if (quizState?.state === 'QUESTION_OPEN') {
-      navigation.navigate('Question');
-    }
-  }, [quizState?.state, navigation]);
+  // useEffect(() => {
+  //   if (quizState?.state === 'QUESTION_OPEN') {
+  //     navigation.navigate('Question');
+  //   }
+  // }, [quizState?.state, navigation]);
 
   // Navigate to DefaultScreen if player is not active or game state is not PRE/OPEN/BUYOUT_OPEN
-  useEffect(() => {
-    if (playerData && !playerData.isActive) {
-      navigation.navigate('Default');
-      return;
-    }
+  // useEffect(() => {
+  //   if (playerData && !playerData.isActive) {
+  //     navigation.navigate('Default');
+  //     return;
+  //   }
     
-    if (quizState && !['QUESTION_PRE', 'QUESTION_OPEN', 'BUYOUT_OPEN'].includes(quizState.state)) {
-      navigation.navigate('Default');
-    }
-  }, [playerData?.isActive, quizState?.state, navigation]);
+  //   if (quizState && !['QUESTION_PRE', 'QUESTION_OPEN', 'BUYOUT_OPEN'].includes(quizState.state)) {
+  //     navigation.navigate('Default');
+  //   }
+  // }, [playerData?.isActive, quizState?.state, navigation]);
 
   // Handle image download (without sending check message)
   useEffect(() => {
@@ -162,15 +317,10 @@ const PrepareScreen = () => {
     }
   }, [wsStatus, imageUri, currentAppTier?.tierNumber, seatNumber, imageError, checkMessageSent, quizState?.state]);
 
-  // // Reset check message flag only when a new question starts (new tier number)
-  // useEffect(() => {
-  //   setCheckMessageSent(false);
-  // }, [currentAppTier?.tierNumber]); // Removed quizState?.state to prevent reset on QUESTION_PRE -> QUESTION_OPEN transition
-
   if (isLoading) {
     return (
       <View style={styles.statusContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color={theme.colors.primary} />
         <Text style={styles.statusText}>{t('prepareScreen.loadingNextQuestion')}</Text>
       </View>
     );
@@ -180,7 +330,7 @@ const PrepareScreen = () => {
     return (
       <View style={styles.statusContainer}>
         <Text style={styles.errorText}>{t('errors.playerDataError')}</Text>
-        <Text style={styles.errorText}>{playerError.message || t('errors.unknownError')}</Text> {/* Display specific error */}
+        <Text style={styles.errorText}>{playerError.message || t('errors.unknownError')}</Text>
       </View>
     );
   }
@@ -189,7 +339,7 @@ const PrepareScreen = () => {
     return (
       <View style={styles.statusContainer}>
         <Text style={styles.errorText}>{t('prepareScreen.errorLoadingTiers')}</Text>
-        <Text style={styles.errorText}>{tiersError.message || t('errors.unknownError')}</Text> {/* Display specific error */}
+        <Text style={styles.errorText}>{tiersError.message || t('errors.unknownError')}</Text>
       </View>
     );
   }
@@ -214,7 +364,7 @@ const PrepareScreen = () => {
 
       {isLoading && (
         <View style={styles.statusContainer}>
-          <ActivityIndicator size="large" color="#0000ff" />
+          <ActivityIndicator size="large" color={theme.colors.primary} />
           <Text style={styles.statusText}>{t('prepareScreen.loadingNextQuestion')}</Text>
         </View>
       )}
@@ -238,159 +388,42 @@ const PrepareScreen = () => {
           <Text style={styles.prepareText}>
             {t('prepareScreen.readyForTier', { tierLegend: currentAppTier.legend })}
           </Text>
-          {/* <Text style={styles.questionLabelText}>{currentAppTier.label}</Text> */}
           
+          <View style={{height: '35%'}}>
           {isImageLoading && (
-            <View style={styles.imageStatusContainer}>
-              <ActivityIndicator size="large" color="#007bff" />
+            <View style={styles.statusContainer}>
+              <ActivityIndicator size="large" color={theme.colors.primary} />
               <Text style={styles.imageStatusText}>{t('prepareScreen.imageLoading')}</Text>
             </View>
-          )}
+          ) }
+          
           {imageError && (
-            <View style={styles.imageStatusContainer}>
+            <View style={styles.statusContainer}>
               <Text style={styles.errorText}>{imageError}</Text>
             </View>
-          )}
-          {/* {imageUri && !isImageLoading && !imageError && (
-            <Image source={{ uri: imageUri }} style={styles.questionImage} resizeMode="contain" />
-          )} */}
-          {(!imageUri && !isImageLoading && !imageError && currentAppTier.image) && (
-            // Fallback if image is defined but not loaded/loading and no error (e.g. initial state)
-            <View style={[styles.questionImage, styles.imagePlaceholder]}>
-                <Text>{t('prepareScreen.imageWaiting')}</Text>
-            </View>
-          )}
+            )}
+            {/* (!currentAppTier.image) */}
           {(!currentAppTier.image) && (
-            // If no image is associated with the tier
-             <View style={[styles.questionImage, styles.imagePlaceholder]}>
-                <Text>{t('prepareScreen.noImageForTier')}</Text>
+             <View style={styles.statusContainer}>
+                <Text style={styles.errorText}>{t('prepareScreen.noImageForTier')}</Text>
             </View>
           )}
+          </View>
         </View>
       )}
 
-      {!isLoading && !tiersError && (!currentAppTier || quizState?.state !== 'QUESTION_PRE') && playerData?.isActive && (
+      {/* !isLoading && !tiersError && (!currentAppTier || quizState?.state !== 'QUESTION_PRE') */}
+      {/* !isLoading && !tiersError && ( quizState?.state === 'IDLE') */}
+      {/* {!isLoading && !tiersError && (!currentAppTier || quizState?.state !== 'QUESTION_PRE') && playerData?.isActive && (
          <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{t('prepareScreen.waitingForNextQuestion')}</Text>
           {quizState && <Text style={styles.debugStateText}>Current State: {quizState.state}</Text>}
         </View>
-      )}
-      
-      {/* Display WebSocket connection status if there's an issue */}
-      {wsStatus === 'error' && (
-        <Text style={styles.errorText}>
-          {t('errors.webSocketError')}
-        </Text>
-      )}
-      {wsStatus === 'disconnected' && serverIP && (
-        <Text style={styles.warningText}>{t('defaultScreen.webSocketDisconnected')}</Text>
-      )}
+      )} */}
+
+      <ConnectionStatus showTitle={false } />
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#f0f0f0', 
-  },
-  headerContainer: {
-    position: 'absolute',
-    top: 40, // Adjusted for tablets
-    left: 20,
-    right: 20,
-    alignItems: 'center', // Center header text
-    paddingVertical: 10,
-    backgroundColor: 'rgba(255,255,255,0.8)',
-    borderRadius: 5,
-  },
-  headerText: {
-    fontSize: 20, // Larger for readability
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  contentContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-  },
-  prepareText: {
-    fontSize: 36, // Prominent text
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 15,
-    color: '#004085', // A calm blue
-  },
-  questionLabelText: {
-    fontSize: 22,
-    textAlign: 'center',
-    marginBottom: 20, // Adjusted margin
-    color: '#555',
-  },
-  imagePlaceholder: { // Styles for when image is a placeholder (e.g. loading, error, or no image)
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#e0e0e0',
-    borderWidth: 1,
-    borderColor: '#ccc',
-  },
-  questionImage: { // Actual image style
-    width: '90%',
-    aspectRatio: 16 / 9,
-    borderRadius: 10,
-    marginBottom: 20,
-  },
-  // Added missing status/error styles
-  statusContainer: {
-    alignItems: 'center',
-    marginBottom: 20,
-    padding: 20,
-  },
-  statusText: {
-    fontSize: 18,
-    color: '#333',
-    marginTop: 10,
-    textAlign: 'center',
-  },
-  errorText: {
-    fontSize: 18,
-    color: 'red',
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  imageStatusContainer: {
-    width: '90%',
-    aspectRatio: 16 / 9,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-    padding: 10,
-  },
-  imageStatusText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#333',
-  },
-  debugStateText: { // Added for debugging state issues
-    marginTop: 10,
-    fontSize: 12,
-    color: 'grey',
-  },
-  warningText: {
-    fontSize: 18,
-    color: 'orange',
-    textAlign: 'center',
-    marginTop: 10,
-  },
-  errorDetailsText: {
-    marginTop: 5,
-    fontSize: 16,
-    color: 'red',
-    textAlign: 'center',
-  }
-});
 
 export default PrepareScreen;

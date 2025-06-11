@@ -1,41 +1,80 @@
 {
   "expo": {
-    "name": "app",
-    "slug": "app",
+    "name": "Quiz Player",
+    "slug": "quizPlayer",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "icon": "./assets/logo.png",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "statusBarHidden": true,
+    "backgroundColor": "#1a1a1a",
     "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "image": "./assets/splash-logo-dark.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#1a1a1a",
+      "dark": {
+        "image": "./assets/splash-logo-dark.png",
+        "resizeMode": "cover",
+        "backgroundColor": "#1a1a1a"
+      }
     },
     "ios": {
       "supportsTablet": true,
-      "statusBarHidden": true
+      "statusBarHidden": true,
+      "backgroundColor": "#1a1a1a",
+      "splash": {
+        "image": "./assets/splash-logo-dark.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#1a1a1a",
+        "tabletImage": "./assets/splash-logo-dark.png",
+        "dark": {
+          "image": "./assets/splash-logo-dark.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#1a1a1a",
+          "tabletImage": "./assets/splash-logo-dark.png"
+        }
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/logo.png",
+        "backgroundColor": "#1a1a1a"
       },
-      "edgeToEdgeEnabled": true,
+      "backgroundColor": "#1a1a1a",
+      "splash": {
+        "image": "./assets/splash-logo-dark.png",
+        "resizeMode": "cover",
+        "backgroundColor": "#1a1a1a",
+        "mdpi": "./assets/splash-logo-dark.png",
+        "hdpi": "./assets/splash-logo-dark.png",
+        "xhdpi": "./assets/splash-logo-dark.png",
+        "xxhdpi": "./assets/splash-logo-dark.png",
+        "xxxhdpi": "./assets/splash-logo-dark.png",
+        "dark": {
+          "image": "./assets/splash-logo-dark.png",
+          "resizeMode": "cover",
+          "backgroundColor": "#1a1a1a",
+          "mdpi": "./assets/splash-logo-dark.png",
+          "hdpi": "./assets/splash-logo-dark.png",
+          "xhdpi": "./assets/splash-logo-dark.png",
+          "xxhdpi": "./assets/splash-logo-dark.png",
+          "xxxhdpi": "./assets/splash-logo-dark.png"
+        }
+      },
       "statusBar": {
         "hidden": true,
-        "barStyle": "dark-content",
-        "translucent": true
+        "translucent": true,
+        "backgroundColor": "#1a1a1a"
       },
       "navigationBar": {
         "visible": false,
-        "barStyle": "dark-content"
-      },
-      "theme": "@android:style/Theme.DeviceDefault.NoActionBar.Fullscreen"
+        "backgroundColor": "#1a1a1a"
+      }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/logo.png",
+      "backgroundColor": "#1a1a1a"
     }
   }
 }

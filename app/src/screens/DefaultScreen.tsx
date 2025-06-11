@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../context/AppContext';
@@ -7,7 +7,9 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
 import { useWebSocketContext } from '../context/WebSocketContext';
+import { useTheme } from '../theme';
 import { iQuizSate, BroadcastState } from '../types';
+import { ConnectionStatus } from '../components/ConnectionStatus';
 
 const logo = require('../assets/images/logo.png');
 
@@ -16,64 +18,152 @@ const DefaultScreen = () => {
   const { seatNumber, serverIP } = useAppContext();
   const { playerData, isLoading, error, refetchPlayer } = usePlayerState();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList, 'Default'>>();
-  const { status, quizState, setQuizState, errorDetails } = useWebSocketContext(); // Removed lastMessage
+  const { theme } = useTheme();
 
-  // Listen for WebSocket messages that might require updating player data
-  useEffect(() => {
-    if (quizState) {
-      // Navigate based on the new state
-      switch (quizState.state) {
-        case 'UPDATE_PLAYER':
-          refetchPlayer();
-          break;
-        case 'QUESTION_PRE':
-          // Handle pre-question state
-          if (playerData?.isActive) {
-            navigation.navigate('Prepare');
-          }
-          break;
-        case 'QUESTION_OPEN':
-          // Handle question open state
-          if (playerData?.isActive) {
-            navigation.navigate('Question');
-          }
-          break;
-        case 'IDLE':
-        case 'QUESTION_CLOSED':
-        case 'QUESTION_COMPLETE':
-        case 'BUYOUT_COMPLETE':
-          // Stay on DefaultScreen or navigate to it if not already there
-          if (navigation.getState().routes[navigation.getState().index].name !== 'Default') {
-            navigation.navigate('Default');
-          }
-          break;
-        default:
-          // Handle any other states or do nothing
-          break;
-      }
+  // Use both WebSocket and SSE contexts
+  const { status: wsStatus, quizState: wsQuizState, setQuizState, errorDetails } = useWebSocketContext();
+
+  // For now, prioritize WebSocket for quiz state since SSE only provides timer state
+  const quizState = useMemo(() => {
+    // Currently only WebSocket provides quiz state
+    if (wsStatus === 'connected' && wsQuizState) {
+      return wsQuizState;
     }
-  }, [quizState, refetchPlayer, navigation]);
+    return null;
+  }, [wsStatus, wsQuizState]);
+
+  // Listen for messages that might require updating player data
+  // useEffect(() => {
+  //   if (quizState) {
+  //     // Navigate based on the new state
+  //     switch (quizState.state) {
+  //       case 'UPDATE_PLAYER':
+  //         refetchPlayer();
+  //         break;
+  //       case 'QUESTION_PRE':
+  //         // Handle pre-question state
+  //         if (playerData?.isActive) {
+  //           navigation.navigate('Prepare');
+  //         }
+  //         break;
+  //       case 'QUESTION_OPEN':
+  //         // Handle question open state
+  //         if (playerData?.isActive) {
+  //           navigation.navigate('Question');
+  //         }
+  //         break;
+  //       case 'IDLE':
+  //       case 'QUESTION_CLOSED':
+  //       case 'QUESTION_COMPLETE':
+  //       case 'BUYOUT_COMPLETE':
+  //         // Stay on DefaultScreen or navigate to it if not already there
+  //         if (navigation.getState().routes[navigation.getState().index].name !== 'Default') {
+  //           navigation.navigate('Default');
+  //         }
+  //         break;
+  //       default:
+  //         // Handle any other states or do nothing
+  //         break;
+  //     }
+  //   }
+  // }, [quizState, refetchPlayer, navigation, playerData?.isActive]);
 
   const handleLongPress = () => {
     navigation.navigate('Admin');
   };
 
+  // Create styles using theme
+  const styles = StyleSheet.create({
+    container: {
+      ...theme.components.container,
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      // gap: '15%',
+    },
+    logo: {
+      width: '80%',
+      maxHeight: 150,
+      marginHorizontal: 'auto',
+      // marginBottom: '20%',
+      // marginTop: '20%',
+    },
+    statusContainer: {
+      alignItems: 'center',
+      marginBottom: theme.spacing.lg,
+      marginTop: theme.spacing['2xl'],
+    },
+    statusText: {
+      ...theme.components.text.body,
+      marginTop: theme.spacing.sm,
+      textAlign: 'center',
+    },
+    errorText: {
+      ...theme.components.text.error,
+      textAlign: 'center',
+    },
+    playerInfoContainer: {
+      ...theme.components.card,
+      marginTop: theme.spacing['4xl'],
+      marginHorizontal: 'auto',
+      alignItems: 'center',
+      width: '100%',
+      maxWidth: 400,
+    },
+    playerName: {
+      ...theme.components.text.heading,
+      marginBottom: theme.spacing.sm,
+      textAlign: 'center',
+    },
+    inactivePlayerName: {
+      color: theme.colors.destructive,
+    },
+    seatNumber: {
+      ...theme.components.text.subheading,
+      color: theme.colors.mutedForeground,
+    },
+    infoText: {
+      ...theme.components.text.body,
+      marginTop: theme.spacing.lg,
+      textAlign: 'center',
+      color: theme.colors.mutedForeground,
+    },
+    warningText: {
+      ...theme.components.text.body,
+      color: theme.colors.accent,
+      textAlign: 'center',
+      marginTop: theme.spacing.sm,
+    },
+    errorDetailsText: {
+      ...theme.components.text.muted,
+      color: theme.colors.destructive,
+      textAlign: 'center',
+      marginTop: theme.spacing.xs,
+    },
+  
+  });
+
   return (
     <TouchableOpacity onLongPress={handleLongPress} style={styles.container} activeOpacity={1}>
-      <Image source={logo} style={styles.logo} resizeMode="contain" />
 
-      {isLoading && (
+
+      <View style={{width: '100%',  marginHorizontal: 'auto', marginTop: theme.spacing['4xl']}}>
+
+        <Image source={logo} style={styles.logo} resizeMode="center" />
+
+        {isLoading && (
         <View style={styles.statusContainer}>
-          <ActivityIndicator size="large" color="#0000ff" />
+          <ActivityIndicator size="large" color={theme.colors.primary} />
           <Text style={styles.statusText}>{t('defaultScreen.loadingPlayerData')}</Text>
         </View>
       )}
+
       {error && (
         <View style={styles.statusContainer}>
           <Text style={styles.errorText}>{t('defaultScreen.errorLoadingPlayerData')}</Text>
-          {error.message && <Text style={styles.errorText}>{error.message}</Text>} {/* Display specific error message */}
+          {error.message && <Text style={styles.errorText}>{error.message}</Text>}
         </View>
       )}
+
       {!isLoading && !error && playerData && (
         <View style={styles.playerInfoContainer}>
           <Text 
@@ -86,11 +176,13 @@ const DefaultScreen = () => {
           )}
         </View>
       )}
+
       {!isLoading && !error && !playerData && seatNumber !== null && (
-         <View style={styles.statusContainer}>
+        <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{t('defaultScreen.noPlayerData')}</Text>
         </View>
       )}
+
       {!isLoading && !seatNumber && (
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{t('defaultScreen.configureSeatAdmin')}</Text>
@@ -103,97 +195,13 @@ const DefaultScreen = () => {
       )}
       {!isLoading && !error && playerData && !playerData.isActive && (
         <Text style={styles.infoText}>{t('defaultScreen.playerInactive')}</Text>
-      )}
+        )}
+      </View>
 
-      {/* Display WebSocket connection status if there's an issue */}
-      {status === 'error' && (
-        <Text style={styles.errorText}>
-          {t('errors.webSocketError')}
-          {errorDetails && typeof errorDetails === 'string' && (
-            <Text style={styles.errorDetailsText}>{`: ${errorDetails}`}</Text>
-          )}
-        </Text>
-      )}
-      {status === 'disconnected' && serverIP && (
-        <Text style={styles.warningText}>{t('defaultScreen.webSocketDisconnected')}</Text>
-      )}
+    <ConnectionStatus showTitle={false } />
+ 
     </TouchableOpacity>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#f0f0f0', // Example background color
-  },
-  logo: {
-    width: '80%',
-    maxHeight: 150, 
-    marginBottom: 40,
-  },
-  statusContainer: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  statusText: {
-    fontSize: 18,
-    color: '#333',
-    marginTop: 10,
-    textAlign: 'center',
-  },
-  errorText: {
-    fontSize: 18,
-    color: 'red',
-    textAlign: 'center',
-  },
-  playerInfoContainer: {
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  playerName: {
-    fontSize: 32, // Larger font for player name
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
-  },
-  inactivePlayerName: {
-    color: 'red',
-  },
-  seatNumber: {
-    fontSize: 20,
-    color: 'gray',
-  },
-  infoText: { // Added infoText style
-    marginTop: 30,
-    fontSize: 18,
-    color: '#666',
-    textAlign: 'center',
-  },
-  warningText: {
-    fontSize: 18,
-    color: 'orange',
-    textAlign: 'center',
-    marginTop: 10,
-  },
-  errorDetailsText: {
-    marginTop: 5,
-    fontSize: 16,
-    color: 'red',
-    textAlign: 'center',
-  },
-});
 
 export default DefaultScreen;

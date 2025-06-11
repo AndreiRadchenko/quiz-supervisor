@@ -7,6 +7,7 @@ import { useNavigation } from '@react-navigation/native'; // Added useNavigation
 import { StackNavigationProp } from '@react-navigation/stack'; // Added StackNavigationProp
 import { RootStackParamList } from '../navigation/types'; // Added RootStackParamList
 import { useWebSocketContext } from '../context/WebSocketContext'; // Import WebSocket context
+import { useTheme } from '../theme';
 
 const ADMIN_PASSWORD = '12345678'; // Hardcoded for now, move to env or config
 
@@ -16,7 +17,10 @@ const AdminScreen = () => { // Removed navigation prop, using useNavigation inst
   const { t, i18n } = useTranslation();
   const { seatNumber, serverIP, locale, setSeatNumber, setServerIP, setLocale } = useAppContext();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList, 'Admin'>>(); // Added navigation
-  const { status: wsStatus } = useWebSocketContext(); // Get WebSocket status
+  const { theme } = useTheme();
+  
+  // Get both connection statuses
+  const { status: wsStatus } = useWebSocketContext();
 
   const [inputSeatNumber, setInputSeatNumber] = useState(seatNumber?.toString() || '');
   const [inputServerIP, setInputServerIP] = useState(serverIP || '');
@@ -59,6 +63,82 @@ const AdminScreen = () => { // Removed navigation prop, using useNavigation inst
     }
   };
 
+  // Create styles using theme
+  const styles = StyleSheet.create({
+    scrollContainer: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    container: {
+      flexGrow: 1,
+      justifyContent: 'center',
+      padding: theme.spacing.lg,
+      backgroundColor: theme.colors.background,
+    },
+    title: {
+      ...theme.components.text.heading,
+      textAlign: 'center',
+      marginBottom: theme.spacing.xl,
+    },
+    label: {
+      ...theme.components.text.body,
+      fontWeight: theme.fontWeight.medium,
+      marginBottom: theme.spacing.xs,
+      marginTop: theme.spacing.md,
+    },
+    input: {
+      ...theme.components.input,
+      marginBottom: theme.spacing.md,
+    },
+    pickerContainer: {
+      backgroundColor: theme.colors.input,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.borderRadius.md,
+      marginBottom: theme.spacing.lg,
+    },
+    picker: {
+      color: theme.colors.foreground,
+    },
+    spacer: {
+      height: theme.spacing.sm,
+    },
+    statusContainer: {
+      ...theme.components.card,
+      marginTop: theme.spacing.lg,
+    },
+    statusTitle: {
+      ...theme.components.text.subheading,
+      textAlign: 'center',
+      marginBottom: theme.spacing.md,
+    },
+    statusRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: theme.spacing.xs,
+    },
+    statusLabel: {
+      ...theme.components.text.body,
+    },
+    statusValue: {
+      ...theme.components.text.body,
+      fontWeight: theme.fontWeight.medium,
+    },
+    connected: {
+      color: '#10b981', // Green
+    },
+    disconnected: {
+      color: theme.colors.destructive,
+    },
+    connecting: {
+      color: theme.colors.accent,
+    },
+    error: {
+      color: theme.colors.destructive,
+    },
+  });
+
   if (!isPasswordVerified) {
     return (
       <View style={styles.container}>
@@ -66,6 +146,7 @@ const AdminScreen = () => { // Removed navigation prop, using useNavigation inst
         <TextInput
           style={styles.input}
           placeholder={t('adminScreen.passwordPlaceholder')}
+          placeholderTextColor={theme.colors.mutedForeground}
           value={passwordAttempt}
           onChangeText={setPasswordAttempt}
           secureTextEntry
@@ -91,7 +172,8 @@ const AdminScreen = () => { // Removed navigation prop, using useNavigation inst
         value={inputServerIP}
         onChangeText={setInputServerIP}
         placeholder="e.g., 192.168.1.100"
-        keyboardType="url" // Offers . and numbers
+        placeholderTextColor={theme.colors.mutedForeground}
+        keyboardType="url"
         autoCorrect={false}
         autoCapitalize="none"
         returnKeyType="next"
@@ -104,6 +186,7 @@ const AdminScreen = () => { // Removed navigation prop, using useNavigation inst
         value={inputSeatNumber}
         onChangeText={setInputSeatNumber}
         placeholder="e.g., 1"
+        placeholderTextColor={theme.colors.mutedForeground}
         keyboardType="number-pad"
         returnKeyType="done"
         blurOnSubmit={true}
@@ -113,7 +196,7 @@ const AdminScreen = () => { // Removed navigation prop, using useNavigation inst
       <View style={styles.pickerContainer}>
         <Picker
           selectedValue={selectedLocale}
-          onValueChange={(itemValue: Locale, itemIndex: number) => { // Type itemValue explicitly
+          onValueChange={(itemValue: Locale, itemIndex: number) => {
             setSelectedLocale(itemValue);
           }}
           style={styles.picker}
@@ -127,66 +210,25 @@ const AdminScreen = () => { // Removed navigation prop, using useNavigation inst
       <View style={styles.spacer} />
       <Button title={t('adminScreen.goBack')} onPress={() => navigation.goBack()} />
 
-      {/* WebSocket Status Display */}
-      <View style={styles.wsStatusContainer}>
-        <Text style={styles.wsStatusText}>
-          {t('adminScreen.websocketStatus')}: {wsStatus}
-        </Text>
+      {/* Connection Status Display */}
+      <View style={styles.statusContainer}>
+        <Text style={styles.statusTitle}>Connection Status</Text>
+        
+        <View style={styles.statusRow}>
+          <Text style={styles.statusLabel}>WebSocket:</Text>
+          <Text style={[
+            styles.statusValue,
+            wsStatus === 'connected' && styles.connected,
+            wsStatus === 'disconnected' && styles.disconnected,
+            wsStatus === 'connecting' && styles.connecting,
+            wsStatus === 'error' && styles.error,
+          ]}>
+            {wsStatus.charAt(0).toUpperCase() + wsStatus.slice(1)}
+          </Text>
+        </View>
       </View>
     </ScrollView>
   );
 };
-
-const styles = StyleSheet.create({
-  scrollContainer: { // Added for ScrollView
-    flex: 1,
-  },
-  container: {
-    flexGrow: 1, // Changed to flexGrow for ScrollView
-    justifyContent: 'center',
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  label: {
-    fontSize: 16,
-    marginBottom: 5,
-    marginTop: 10,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 15,
-    fontSize: 16,
-  },
-  pickerContainer: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    marginBottom: 20,
-  },
-  picker: {
-    // height: 50, // Adjust as needed, might not be respected on all platforms
-  },
-  spacer: {
-    height: 10,
-  },
-  wsStatusContainer: {
-    marginTop: 20,
-    padding: 10,
-    borderRadius: 5,
-    alignItems: 'center',
-  },
-  wsStatusText: {
-    fontSize: 16,
-    fontWeight: '500',
-  }
-});
 
 export default AdminScreen;

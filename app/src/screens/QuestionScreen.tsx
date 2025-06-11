@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../context/AppContext';
 import { usePlayerState } from '../hooks/usePlayerState';
 import { useWebSocketContext } from '../context/WebSocketContext';
+import { useTheme } from '../theme';
 import { useTiersData, getAppTier } from '../hooks/useTierState';
 import { AppTierType, iQuizSate, PlayerDataType, QuestionTypeEnum, iAnswerMessage } from '../types';
 import { useNavigation } from '@react-navigation/native';
@@ -28,7 +29,8 @@ const QuestionScreen = () => {
   const { t, i18n } = useTranslation();
   const { seatNumber, serverIP, locale } = useAppContext();
   const { playerData, isLoading: isLoadingPlayer, error: playerError, refetchPlayer } = usePlayerState();
-  const { quizState, setQuizState, status: wsStatus, sendMessage } = useWebSocketContext(); // Simplified to just use quizState
+  const { quizState, setQuizState, status: wsStatus, sendMessage } = useWebSocketContext();
+  const { theme } = useTheme();
   const { tiersData, isLoading: isLoadingTiers, error: tiersError } = useTiersData();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList, 'Question'>>();
 
@@ -36,6 +38,201 @@ const QuestionScreen = () => {
   const [selectedOption, setSelectedOption] = useState<string>(''); // Track selected multiple choice option
   const [actionTaken, setActionTaken] = useState<'answered' | 'passed' | 'bought_out' | null>(null);
   const [countdown, setCountdown] = useState<number | null>(null);
+
+  // Create styles using theme
+  const styles = StyleSheet.create({
+    container: {
+      ...theme.components.container,
+    },
+    scrollContentContainer: {
+      flexGrow: 1,
+      padding: theme.spacing.lg,
+      backgroundColor: theme.colors.background,
+    },
+    headerContainer: {
+      ...theme.components.card,
+      marginBottom: theme.spacing.lg,
+    },
+    headerText: {
+      ...theme.components.text.body,
+      fontSize: theme.fontSize.base,
+      fontWeight: theme.fontWeight.bold,
+      textAlign: 'center',
+    },
+    tierLegendText: {
+      ...theme.components.text.heading,
+      fontSize: theme.fontSize.xl,
+      textAlign: 'center',
+      marginBottom: theme.spacing.lg,
+    },
+    questionImage: {
+      width: '100%',
+      height: 300,
+      marginBottom: theme.spacing.lg,
+      backgroundColor: theme.colors.card,
+      borderRadius: theme.borderRadius.md,
+    },
+    actionButtonsContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      marginBottom: theme.spacing.lg,
+    },
+    actionButton: {
+      paddingVertical: theme.spacing.sm,
+      paddingHorizontal: theme.spacing.lg,
+      borderRadius: theme.borderRadius.md,
+      minWidth: 120,
+    },
+    passButton: {
+      backgroundColor: theme.colors.destructive,
+    },
+    buyoutButton: {
+      backgroundColor: theme.colors.secondary,
+    },
+    actionButtonText: {
+      ...theme.components.text.body,
+      color: theme.colors.background,
+      fontSize: theme.fontSize.base,
+      fontWeight: theme.fontWeight.bold,
+      textAlign: 'center',
+    },
+    disabledButton: {
+      opacity: 0.5,
+    },
+    answerOptionsContainer: {
+      marginBottom: theme.spacing.lg,
+    },
+    multipleChoiceContainer: {
+      marginBottom: theme.spacing.lg,
+    },
+    optionButton: {
+      backgroundColor: theme.colors.primary,
+      paddingVertical: theme.spacing.md,
+      paddingHorizontal: theme.spacing.lg,
+      marginBottom: theme.spacing.sm,
+      borderRadius: theme.borderRadius.md,
+      borderWidth: 2,
+      borderColor: 'transparent',
+    },
+    selectedOptionButton: {
+      backgroundColor: theme.colors.accent,
+      borderColor: theme.colors.accentForeground,
+    },
+    submittedOptionButton: {
+      backgroundColor: theme.colors.secondary,
+      borderColor: theme.colors.secondaryForeground,
+    },
+    optionText: {
+      ...theme.components.text.body,
+      color: theme.colors.primaryForeground,
+      fontSize: theme.fontSize.lg,
+      textAlign: 'center',
+    },
+    selectedOptionText: {
+      ...theme.components.text.body,
+      color: theme.colors.accentForeground,
+      fontWeight: theme.fontWeight.bold,
+    },
+    submittedOptionText: {
+      ...theme.components.text.body,
+      color: theme.colors.secondaryForeground,
+      fontWeight: theme.fontWeight.bold,
+    },
+    textInputContainer: {
+      marginBottom: theme.spacing.lg,
+    },
+    textInput: {
+      ...theme.components.card,
+      color: theme.colors.cardForeground,
+      fontSize: theme.fontSize.lg,
+      paddingVertical: theme.spacing.md,
+      paddingHorizontal: theme.spacing.lg,
+      borderWidth: 2,
+      borderColor: theme.colors.border,
+      textAlign: 'center',
+    },
+    confirmButton: {
+      backgroundColor: theme.colors.accent,
+      paddingVertical: theme.spacing.md,
+      paddingHorizontal: theme.spacing.xl,
+      borderRadius: theme.borderRadius.md,
+      alignSelf: 'center',
+      marginTop: theme.spacing.sm,
+    },
+    confirmButtonText: {
+      ...theme.components.text.body,
+      color: theme.colors.accentForeground,
+      fontSize: theme.fontSize.base,
+      fontWeight: theme.fontWeight.bold,
+    },
+    submitButton: {
+      backgroundColor: theme.colors.accent,
+      paddingVertical: theme.spacing.md,
+      paddingHorizontal: theme.spacing.xl,
+      borderRadius: theme.borderRadius.md,
+      alignSelf: 'center',
+      marginTop: theme.spacing.sm,
+    },
+    submitButtonText: {
+      ...theme.components.text.body,
+      color: theme.colors.accentForeground,
+      fontSize: theme.fontSize.base,
+      fontWeight: theme.fontWeight.bold,
+    },
+    countdownContainer: {
+      backgroundColor: theme.colors.destructive,
+      paddingVertical: theme.spacing.sm,
+      paddingHorizontal: theme.spacing.lg,
+      borderRadius: theme.borderRadius.md,
+      alignSelf: 'center',
+      marginBottom: theme.spacing.lg,
+    },
+    countdownText: {
+      ...theme.components.text.body,
+      color: theme.colors.destructiveForeground,
+      fontSize: theme.fontSize.lg,
+      fontWeight: theme.fontWeight.bold,
+      textAlign: 'center',
+    },
+    statusContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: theme.colors.background,
+    },
+    statusText: {
+      ...theme.components.text.body,
+      fontSize: theme.fontSize.lg,
+      textAlign: 'center',
+      marginBottom: theme.spacing.lg,
+    },
+    errorText: {
+      ...theme.components.text.error,
+      fontSize: theme.fontSize.lg,
+      textAlign: 'center',
+      marginBottom: theme.spacing.sm,
+    },
+    resultContainer: {
+      ...theme.components.card,
+      padding: theme.spacing.lg,
+      alignItems: 'center',
+    },
+    resultText: {
+      ...theme.components.text.body,
+      fontSize: theme.fontSize.lg,
+      fontWeight: theme.fontWeight.bold,
+      textAlign: 'center',
+    },
+    answeredText: {
+      color: theme.colors.accent,
+    },
+    passedText: {
+      color: theme.colors.destructive,
+    },
+    boughtOutText: {
+      color: theme.colors.secondary,
+    },
+  });
 
   // Refs to get current values in timer callback
   const currentAnswerRef = useRef<string>('');
@@ -144,90 +341,90 @@ const QuestionScreen = () => {
   }, [quizState?.state, seatNumber, actionTaken, currentAppTier?.questionType, sendMessage]);
 
   // Countdown timer logic
-  useEffect(() => {
-    const currentTier = getAppTier(tiersData, quizState);
-    console.log('🔄 Countdown effect triggered:', {
-      enableCountdown: currentTier?.enableCountdown,
-      quizState_state: quizState?.state,
-      countdownDuration: quizState?.countdownDuration,
-      currentTier: !!currentTier,
-      seatNumber,
-      actionTaken,
-      currentAppTier: !!currentAppTier
-    });
+  // useEffect(() => {
+  //   const currentTier = getAppTier(tiersData, quizState);
+  //   console.log('🔄 Countdown effect triggered:', {
+  //     enableCountdown: currentTier?.enableCountdown,
+  //     quizState_state: quizState?.state,
+  //     countdownDuration: quizState?.countdownDuration,
+  //     currentTier: !!currentTier,
+  //     seatNumber,
+  //     actionTaken,
+  //     currentAppTier: !!currentAppTier
+  //   });
     
-    if (currentTier?.enableCountdown && quizState?.state === 'QUESTION_OPEN') {
-      const duration = quizState.countdownDuration;
-      console.log('⏰ Starting countdown timer with duration:', duration);
+  //   if (currentTier?.enableCountdown && quizState?.state === 'QUESTION_OPEN') {
+  //     const duration = quizState.countdownDuration;
+  //     console.log('⏰ Starting countdown timer with duration:', duration);
       
-      // Only start countdown if duration is valid (greater than 0)
-      if (duration && duration > 0) {
-        setCountdown(duration);
-        console.log('✅ Countdown timer initialized with', duration, 'seconds');
-        const timer = setInterval(() => {
-          setCountdown(prevCountdown => {
-            if (prevCountdown === null || prevCountdown <= 1) {
-              clearInterval(timer);
-              console.log('Timer expired, auto-submitting answer:', {
-                seatNumber,
-                actionTaken,
-                selectedOption: selectedOptionRef.current,
-                currentAnswer: currentAnswerRef.current.trim()
-              });
+  //     // Only start countdown if duration is valid (greater than 0)
+  //     if (duration && duration > 0) {
+  //       setCountdown(duration);
+  //       console.log('✅ Countdown timer initialized with', duration, 'seconds');
+  //       const timer = setInterval(() => {
+  //         setCountdown(prevCountdown => {
+  //           if (prevCountdown === null || prevCountdown <= 1) {
+  //             clearInterval(timer);
+  //             console.log('Timer expired, auto-submitting answer:', {
+  //               seatNumber,
+  //               actionTaken,
+  //               selectedOption: selectedOptionRef.current,
+  //               currentAnswer: currentAnswerRef.current.trim()
+  //             });
               
-              // Auto-submit the current answer when timer reaches zero
-              if (quizState && seatNumber && !actionTaken) {
-                const autoSubmitMessage: iAnswerMessage = {
-                  seat: seatNumber,
-                  auto: true,
-                };
+  //             // Auto-submit the current answer when timer reaches zero
+  //             if (quizState && seatNumber && !actionTaken) {
+  //               const autoSubmitMessage: iAnswerMessage = {
+  //                 seat: seatNumber,
+  //                 auto: true,
+  //               };
                 
-                // For multiple choice, use selected option; for text, use current answer
-                const finalAnswer = currentAppTier?.questionType === 'MULTIPLE' ? selectedOptionRef.current : currentAnswerRef.current.trim();
-                if (finalAnswer.length > 0) {
-                  autoSubmitMessage.answer = finalAnswer;
-                  console.log('Auto-submitting answer:', finalAnswer);
-                } else {
-                  console.log('No answer to auto-submit, sending empty auto message');
-                }
+  //               // For multiple choice, use selected option; for text, use current answer
+  //               const finalAnswer = currentAppTier?.questionType === 'MULTIPLE' ? selectedOptionRef.current : currentAnswerRef.current.trim();
+  //               if (finalAnswer.length > 0) {
+  //                 autoSubmitMessage.answer = finalAnswer;
+  //                 console.log('Auto-submitting answer:', finalAnswer);
+  //               } else {
+  //                 console.log('No answer to auto-submit, sending empty auto message');
+  //               }
                 
-                sendMessage(autoSubmitMessage);
-                setActionTaken('answered');
-              }
+  //               sendMessage(autoSubmitMessage);
+  //               setActionTaken('answered');
+  //             }
               
-              return 0;
-            }
-            return prevCountdown - 1;
-          });
-        }, 1000);
-        return () => clearInterval(timer);
-      } else {
-        console.log('❌ Invalid countdown duration, not starting timer:', duration);
-        setCountdown(null);
-      }
-    } else {
-      console.log('❌ Countdown conditions not met:', {
-        enableCountdown: currentTier?.enableCountdown,
-        state: quizState?.state,
-        stateIsQuestionOpen: quizState?.state === 'QUESTION_OPEN'
-      });
-      setCountdown(null);
-    }
-    return () => setCountdown(null); // Clear countdown if conditions are not met
-  }, [quizState?.state, quizState?.countdownDuration, quizState?.tierNumber, !!tiersData, seatNumber, actionTaken, sendMessage, currentAppTier?.questionType]); // Removed currentAnswer and selectedOption to prevent timer restart on input changes
+  //             return 0;
+  //           }
+  //           return prevCountdown - 1;
+  //         });
+  //       }, 1000);
+  //       return () => clearInterval(timer);
+  //     } else {
+  //       console.log('❌ Invalid countdown duration, not starting timer:', duration);
+  //       setCountdown(null);
+  //     }
+  //   } else {
+  //     console.log('❌ Countdown conditions not met:', {
+  //       enableCountdown: currentTier?.enableCountdown,
+  //       state: quizState?.state,
+  //       stateIsQuestionOpen: quizState?.state === 'QUESTION_OPEN'
+  //     });
+  //     setCountdown(null);
+  //   }
+  //   return () => setCountdown(null); // Clear countdown if conditions are not met
+  // }, [quizState?.state, quizState?.countdownDuration, quizState?.tierNumber, !!tiersData, seatNumber, actionTaken, sendMessage, currentAppTier?.questionType]); // Removed currentAnswer and selectedOption to prevent timer restart on input changes
 
   // Navigate based on quizState and playerData
-  useEffect(() => {
-    if (!playerData?.isActive) {
-      navigation.navigate('Default');
-      return;
-    }
-    if (quizState?.state === 'QUESTION_PRE') {
-      navigation.navigate('Prepare');
-    } else if (quizState && !['QUESTION_OPEN', 'BUYOUT_OPEN'].includes(quizState.state)) {
-      navigation.navigate('Default');
-    }
-  }, [quizState?.state, playerData?.isActive, navigation]);
+  // useEffect(() => {
+  //   if (!playerData?.isActive) {
+  //     navigation.navigate('Default');
+  //     return;
+  //   }
+  //   if (quizState && !['QUESTION_PRE', 'IDLE'].includes(quizState.state)) {
+  //     navigation.navigate('Prepare');
+  //   } else if (quizState && !['QUESTION_OPEN', 'BUYOUT_OPEN'].includes(quizState.state)) {
+  //     navigation.navigate('Default');
+  //   }
+  // }, [quizState?.state, playerData?.isActive, navigation]);
 
   const handleAnswerSubmit = useCallback((answer?: string, pass?: boolean, buyout?: boolean) => {
     console.log('📤 handleAnswerSubmit called:', { 
@@ -429,13 +626,13 @@ const QuestionScreen = () => {
     );
   }
 
-  if (!quizState || !['QUESTION_OPEN', 'BUYOUT_OPEN'].includes(quizState.state)) {
-    return (
-      <View style={styles.statusContainer}>
-        <Text style={styles.statusText}>{t('questionScreen.noQuestionData')}</Text>
-      </View>
-    );
-  }
+  // if (!quizState || !['QUESTION_OPEN', 'BUYOUT_OPEN'].includes(quizState.state)) {
+  //   return (
+  //     <View style={styles.statusContainer}>
+  //       <Text style={styles.statusText}>{t('questionScreen.noQuestionData')}</Text>
+  //     </View>
+  //   );
+  // }
   
   // Now check if we have a valid tier data
   if (!currentAppTier) {
@@ -517,194 +714,5 @@ const QuestionScreen = () => {
     </ScrollView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f0f0f0',
-  },
-  scrollContentContainer: {
-    alignItems: 'center',
-    padding: 10,
-    paddingBottom: 50, // Ensure space for buttons at the bottom
-  },
-  headerContainer: {
-    width: '100%',
-    alignItems: 'center',
-    paddingVertical: 10,
-    marginTop: 0,
-    marginBottom: 10,
-    backgroundColor: 'rgba(255,255,255,0.8)',
-    borderRadius: 5,
-  },
-  headerText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  tierLegendText: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#004085',
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  questionLabelText: {
-    fontSize: 20,
-    color: '#333',
-    textAlign: 'center',
-    marginBottom: 15,
-  },
-  questionImage: {
-    width: '100%',
-    aspectRatio: 16 / 9,
-    marginTop: 10,
-    marginBottom: 10,
-    borderRadius: 5,
-    backgroundColor: '#e0e0e0',
-  },
-  questionText: {
-    fontSize: 18,
-    color: '#444',
-    textAlign: 'center',
-    marginBottom: 25,
-    paddingHorizontal: 10,
-  },
-  multipleChoiceContainer: {
-    flexDirection: 'row',
-    gap: 10,
-    justifyContent: 'space-between',
-    width: '100%',
-    maxWidth: 600, // Max width for very large tablets
-    marginBottom: 20,
-    marginTop: 20,
-  },
-  optionButton: {
-    flex: 1,
-    backgroundColor: '#007bff',
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    marginBottom: 10,
-    alignItems: 'center',
-  },
-  selectedOptionButton: {
-    backgroundColor: '#28a745', // Green for selected option
-    borderWidth: 2,
-    borderColor: '#155724',
-  },
-  submittedOptionButton: {
-    backgroundColor: '#17a2b8', // Blue for submitted option
-    borderWidth: 2,
-    borderColor: '#117a8b',
-  },
-  optionText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '500',
-  },
-  selectedOptionText: {
-    fontWeight: 'bold',
-  },
-  submittedOptionText: {
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  textInputContainer: {
-    width: '100%',
-    maxWidth: 500,
-    marginBottom: 20,
-  },
-  textInput: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 15,
-    fontSize: 18,
-    marginBottom: 10,
-  },
-  submitButton: {
-    backgroundColor: '#28a745',
-    paddingVertical: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  submitButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  actionButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-    maxWidth: 500,
-    marginTop: 10,
-    marginBottom: 20,
-  },
-  actionButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 25,
-    borderRadius: 8,
-    alignItems: 'center',
-    minWidth: 120, // Ensure buttons have a decent size
-  },
-  actionButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  passButton: {
-    backgroundColor: '#ffc107', // Yellow for pass
-  },
-  buyoutButton: {
-    backgroundColor: '#dc3545', // Red for buyout
-  },
-  disabledButton: {
-    opacity: 0.5,
-  },
-  statusContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  statusText: {
-    fontSize: 18,
-    color: '#333',
-    textAlign: 'center',
-    marginTop: 10,
-  },
-  errorText: {
-    fontSize: 18,
-    color: 'red',
-    textAlign: 'center',
-    marginBottom: 5,
-  },
-  warningText: {
-    fontSize: 18,
-    color: 'orange',
-    textAlign: 'center',
-    marginTop: 10,
-  },
-  errorDetailsText: {
-    marginTop: 5,
-    fontSize: 16,
-    color: 'red',
-    textAlign: 'center',
-  },
-  countdownContainer: {
-    marginTop: 20,
-    padding: 10,
-    backgroundColor: 'rgba(0,0,0,0.1)',
-    borderRadius: 5,
-  },
-  countdownText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#d9534f', // A reddish color for urgency
-  }
-});
 
 export default QuestionScreen;

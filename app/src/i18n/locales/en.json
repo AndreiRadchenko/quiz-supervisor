@@ -12,10 +12,13 @@
     "noPlayerData": "No player data found for this seat. Please check admin settings.",
     "configureSeatAdmin": "Please configure Seat Number and Server IP in Admin settings.",
     "connecting": "Connecting to server...",
+    "connected": "Connected",
     "errorConnecting": "Error connecting to server. Please check IP address.",
     "waitingForGame": "Waiting for the game to start...",
     "playerInactive": "You are currently inactive. Waiting for the next game.",
-    "webSocketDisconnected": "Connection to server lost. Attempting to reconnect..."
+    "webSocketDisconnected": "Connection to server lost. Attempting to reconnect...",
+    "connectionStatus": "Connection Status",
+    "connectedVia": "Connected via"
   },
   "prepareScreen": {
     "readyForTier": "Ready for tier {{tierLegend}}",
