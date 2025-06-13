@@ -21,6 +21,7 @@ import { AppTierType, iQuizSate, PlayerDataType, QuestionTypeEnum, iAnswerMessag
 import { getKeyboardProps } from '../utils/keyboard';
 import { AnswerOptions } from '../components/AnswerOptions';
 import { ConnectionStatus } from '../components/ConnectionStatus';
+import { ConfirmationDialog } from '../components/ConfirmationDialog';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -37,6 +38,24 @@ const QuestionScreen = () => {
   const [actionTaken, setActionTaken] = useState<'answered' | 'passed' | 'bought_out' | null>(null);
   const [autoAnswer, setAutoAnswer] = useState<boolean | null>(null); // Track auto answer for QUESTION_CLOSED
   const [isBuyoutTier, setIsBuyoutTier] = useState<boolean>(false); // Track if current tier is a buyout tier
+  
+  // Confirmation dialog state
+  const [confirmationDialog, setConfirmationDialog] = useState<{
+    visible: boolean;
+    type: 'pass' | 'buyout' | 'submit';
+    action: () => void;
+  }>({
+    visible: false,
+    type: 'submit',
+    action: () => {},
+  });
+
+  // Warning dialog state
+  const [warningDialog, setWarningDialog] = useState<{
+    visible: boolean;
+  }>({
+    visible: false,
+  });
 
   // Create styles using theme
   const styles = StyleSheet.create({
@@ -301,82 +320,64 @@ const QuestionScreen = () => {
     
     handleStateChange();
   }, [quizState?.state,
-    actionTaken,        // ← ADD THIS
-    currentAnswer,      // ← ADD THIS  
-    selectedOption,     // ← ADD THIS
-    seatNumber,         // ← ADD THIS
-    currentAppTier,     // ← ADD THIS
-    sendMessage         // ← ADD THIS
+    actionTaken,     
+    currentAnswer,     
+    selectedOption,  
+    seatNumber,      
+    currentAppTier,  
+    sendMessage      
   ]); // Minimal dependencies
 
-  // Effect to reset actionTaken when question changes (new tier or question)
-  // useEffect(() => {
-  //   if (quizState) {
-  //     if (['BUYOUT_COMPLETE', 'QUESTION_COMPLETE', 'IDLE'].includes(quizState.state)) {
-  //       console.log('🔄 QuestionScreen reset effect triggered:', {
-  //     tierNumber: quizState?.tierNumber,
-  //     state: quizState?.state,
-  //     previousActionTaken: actionTaken
-  //   });
+  // Confirmation dialog handlers
+  const showConfirmation = useCallback((type: 'pass' | 'buyout' | 'submit', action: () => void) => {
+    setConfirmationDialog({
+      visible: true,
+      type,
+      action,
+    });
+  }, []);
+
+  const hideConfirmation = useCallback(() => {
+    setConfirmationDialog({
+      visible: false,
+      type: 'submit',
+      action: () => {},
+    });
+  }, []);
+
+  const handleConfirmAction = useCallback(() => {
+    confirmationDialog.action();
+    hideConfirmation();
+  }, [confirmationDialog.action, hideConfirmation]);
+
+  // Warning dialog handlers
+  const showWarning = useCallback(() => {
+    setWarningDialog({
+      visible: true,
+    });
+  }, []);
+
+  const hideWarning = useCallback(() => {
+    setWarningDialog({
+      visible: false,
+    });
+  }, []);
+
+  // Function to check if answer is empty and show appropriate dialog
+  const handleSubmitAttempt = useCallback((type: 'pass' | 'buyout' | 'submit', action: () => void) => {
+    if (type === 'submit') {
+      const isMultipleChoice = currentAppTier?.questionType === 'MULTIPLE';
+      const hasAnswer = isMultipleChoice ? selectedOption.trim() !== '' : currentAnswer.trim() !== '';
+      
+      if (!hasAnswer) {
+        showWarning();
+        return;
+      }
+    }
     
-  //   // Only reset if we're not already in a clean state
-  //   if (actionTaken !== null || currentAnswer !== '' || selectedOption !== '') {
-  //     console.log('🔄 Resetting QuestionScreen state values');
-  //     setActionTaken(null);
-  //     setAutoAnswer(null); // Reset auto answer
-  //     setCurrentAnswer(''); // Clear previous answer
-  //     setSelectedOption(''); // Clear selected option
-  //   }
-  //     }
-  //   }
-
-    
-  // }, [quizState?.tierNumber, quizState?.state]); // Also reset on state change
-
-
-  // // Handle QUESTION_CLOSED auto-submission
-  // useEffect(() => {
-  //   if (quizState?.state === 'QUESTION_CLOSED' && seatNumber && !actionTaken && currentAppTier) {
-  //     console.log('🚨 QUESTION_CLOSED received, auto-submitting answer if no action taken');
-  //     console.log('Auto-submission conditions:', {
-  //       state: quizState.state,
-  //       seatNumber: !!seatNumber,
-  //       actionTaken,
-  //       currentAppTier: !!currentAppTier,
-  //       questionType: currentAppTier.questionType,
-  //       currentAnswer: currentAnswerRef.current,
-  //       selectedOption: selectedOptionRef.current
-  //     });
-
-  //     // Auto-submit based on question type and current state
-  //     const autoSubmitMessage: iAnswerMessage = {
-  //       seat: seatNumber,
-  //       pass: false,
-  //       boughtOut: false,
-  //       auto: true, // This is an automatic submission
-  //     };
-
-  //     // Determine the answer based on question type and current input
-  //     if (currentAppTier.questionType === 'MULTIPLE') {
-  //       // For multiple choice: send selected option or empty string if none selected
-  //       autoSubmitMessage.answer = selectedOptionRef.current || '';
-  //       console.log('📤 Auto-submitting MULTIPLE choice answer:', autoSubmitMessage.answer);
-  //     } else if (currentAppTier.questionType === 'TEXT' || currentAppTier.questionType === 'TEXT NUMERIC') {
-  //       // For text questions: send current input value
-  //       autoSubmitMessage.answer = currentAnswerRef.current.trim();
-  //       console.log('📤 Auto-submitting TEXT answer:', autoSubmitMessage.answer);
-  //     } else {
-  //       // For other question types or buyout scenarios
-  //       autoSubmitMessage.answer = '';
-  //       console.log('📤 Auto-submitting empty answer for question type:', currentAppTier.questionType);
-  //     }
-
-  //     console.log('📤 Sending auto-submission message:', autoSubmitMessage);
-  //     sendMessage(autoSubmitMessage);
-  //     setActionTaken('answered');
-  //     setAutoAnswer(true); // Store auto answer for display 
-  //   }
-  // }, [quizState?.state, seatNumber, actionTaken, currentAppTier?.questionType, sendMessage]);
+    // If we have an answer or it's not a submit action, show confirmation
+    showConfirmation(type, action);
+  }, [currentAppTier?.questionType, selectedOption, currentAnswer, showWarning, showConfirmation]);
 
   const handleAnswerSubmit = useCallback((answer?: string, pass?: boolean, buyout?: boolean) => {
     console.log('📤 handleAnswerSubmit called:', { 
@@ -526,14 +527,6 @@ const QuestionScreen = () => {
       </View>
     );
   }
-
-  // if (!quizState || !['QUESTION_OPEN', 'BUYOUT_OPEN'].includes(quizState.state)) {
-  //   return (
-  //     <View style={styles.statusContainer}>
-  //       <Text style={styles.statusText}>{t('questionScreen.noQuestionData')}</Text>
-  //     </View>
-  //   );
-  // }
   
   // Now check if we have a valid tier data
   if (!currentAppTier) {
@@ -564,12 +557,12 @@ const QuestionScreen = () => {
       
       {/* {quizState.questionText && <Text style={styles.questionText}>{quizState.questionText}</Text>} */}
 
-      {quizState?.state && ['QUESTION_OPEN', 'BUYOUT_OPEN'].includes(quizState.state) && (
+     
         <View style={styles.actionButtonsContainer}>
         {canUsePass  && (
           <TouchableOpacity
             style={[styles.actionButton, styles.passButton, !!actionTaken && styles.disabledButton]}
-            onPress={() => handleAnswerSubmit(undefined, true)}
+            onPress={() => showConfirmation('pass', () => handleAnswerSubmit(undefined, true))}
             disabled={!!actionTaken}
           >
             <Text style={styles.actionButtonText}>{t('questionScreen.pass')}</Text>
@@ -578,7 +571,7 @@ const QuestionScreen = () => {
         {(canUseBuyout || isBuyoutTier) &&  (
           <TouchableOpacity
             style={[styles.actionButton, styles.passButton, !!actionTaken && styles.disabledButton]}
-            onPress={() => handleAnswerSubmit(undefined, undefined, true)}
+            onPress={() => showConfirmation('buyout', () => handleAnswerSubmit(undefined, undefined, true))}
             disabled={!!actionTaken}
           >
             <Text style={styles.actionButtonText}>{t('questionScreen.buyout')}</Text>
@@ -587,13 +580,13 @@ const QuestionScreen = () => {
         {!isBuyoutTier &&  (
           <TouchableOpacity
             style={[styles.actionButton, styles.actionSubmitButton, !!actionTaken && styles.disabledButton]}
-            onPress={() => handleAnswerSubmit(currentAppTier.questionType === 'MULTIPLE' ? selectedOption : currentAnswer)}
+            onPress={() => handleSubmitAttempt('submit', () => handleAnswerSubmit(currentAppTier.questionType === 'MULTIPLE' ? selectedOption : currentAnswer))}
             disabled={!!actionTaken}
           >
             <Text style={[styles.actionButtonText, styles.actionSubmitButtonText]}>{t('questionScreen.submitAnswer')}</Text>
           </TouchableOpacity>
         )}
-      </View>)}
+      </View>
 
       {/* Use AnswerOptions component for multiple choice questions */}
       {currentAppTier.questionType === 'MULTIPLE' && !isBuyoutTier && (
@@ -621,6 +614,29 @@ const QuestionScreen = () => {
       )}
 
        <ConnectionStatus showTitle={false} />
+
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        visible={confirmationDialog.visible}
+        title={t(`confirmations.${confirmationDialog.type}Title`)}
+        message={t(`confirmations.${confirmationDialog.type}Message`)}
+        confirmText={t('confirmations.send')}
+        cancelText={t('confirmations.cancel')}
+        onConfirm={handleConfirmAction}
+        onCancel={hideConfirmation}
+        confirmButtonStyle={confirmationDialog.type === 'pass' ? 'destructive' : 'accent'}
+      />
+
+      {/* Warning Dialog */}
+      <ConfirmationDialog
+        visible={warningDialog.visible}
+        title={t('confirmations.emptyAnswerTitle')}
+        message={t('confirmations.emptyAnswerMessage')}
+        confirmText={t('confirmations.ok')}
+        onConfirm={hideWarning}
+        isWarning={true}
+        confirmButtonStyle="primary"
+      />
 
     </ScrollView>
   );

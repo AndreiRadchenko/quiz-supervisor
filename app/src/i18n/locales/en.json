@@ -45,6 +45,19 @@
     "playerBoughtOutState": "You have used a buyout.",
     "timeLeft": "Time left: {{seconds}}s"
   },
+  "confirmations": {
+    "cancel": "Cancel",
+    "send": "Send",
+    "ok": "OK",
+    "passTitle": "Confirm Pass",
+    "passMessage": "Are you sure you want to pass this question? You will not be able to answer it after passing.",
+    "buyoutTitle": "Confirm Buyout",
+    "buyoutMessage": "Are you sure you want to use a buyout? This action cannot be undone.",
+    "submitTitle": "Confirm Answer",
+    "submitMessage": "Are you sure you want to submit your answer? Make sure it's correct before submitting.",
+    "emptyAnswerTitle": "Empty Answer",
+    "emptyAnswerMessage": "Please select an option or enter your answer before submitting."
+  },
   "adminScreen": {
     "enterPassword": "Enter Admin Password",
     "passwordPlaceholder": "Password",
