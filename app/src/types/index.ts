@@ -16,7 +16,7 @@ export type BroadcastState =
   | 'IDLE'
   | 'BUYOUT_OPEN'
   | 'BUYOUT_COMPLETE'
-  | 'UPDATE_PLAYER';
+  | 'UPDATE_PLAYERS';
 
 // Payload for most WebSocket events
 export interface iQuizSate { // As received from WebSocket
@@ -116,7 +116,7 @@ export type AppTierType = {
 // Outgoing WebSocket Message Types
 export interface iCheckMessage {
   seat: number;
-  imageloaded: boolean;
+  imageLoaded: boolean;
   tierNumber: number;
   questionNumber?: number; // Made optional
 }

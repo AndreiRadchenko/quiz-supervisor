@@ -1,4 +1,4 @@
-import { AppContextType, SeatDataType, TierDataType } from '../types';
+import { AppContextType, iQuizSate, SeatDataType, TierDataType } from '../types';
 import { useAppContext } from '../context/AppContext';
 
 const getBaseUrl = (serverIP: string | null) => {
@@ -7,6 +7,22 @@ const getBaseUrl = (serverIP: string | null) => {
     return null;
   }
   return `http://${serverIP}:5000`;
+};
+
+export const fetchQuizState = async (serverIP: string | null): Promise<iQuizSate | null> => {
+  const baseUrl = getBaseUrl(serverIP);
+  if (!baseUrl ) return null;
+
+  try {
+    const response = await fetch(`${baseUrl}/game/state`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch quiz state: ${response.status}`);
+    }
+    return await response.json() as iQuizSate;
+  } catch (error) {
+    console.error("Error fetching quiz state:", error);
+    throw error; // Re-throw to be caught by TanStack Query
+  }
 };
 
 export const fetchPlayerData = async (seatNumber: number, serverIP: string | null): Promise<SeatDataType | null> => {

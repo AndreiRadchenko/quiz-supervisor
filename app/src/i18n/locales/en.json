@@ -15,7 +15,7 @@
     "connected": "Connected",
     "errorConnecting": "Error connecting to server. Please check IP address.",
     "waitingForGame": "Waiting for the game to start...",
-    "playerInactive": "You are currently inactive. Waiting for the next game.",
+    "playerInactive": "You are currently inactive.",
     "webSocketDisconnected": "Connection to server lost. Attempting to reconnect...",
     "connectionStatus": "Connection Status",
     "connectedVia": "Connected via"
@@ -26,7 +26,7 @@
     "errorLoadingTiers": "Error loading question tiers. Please check connection.",
     "imageLoading": "Question image loading...",
     "waitingForNextQuestion": "Waiting for the next question...",
-    "playerInactiveOutOfGame": "You are out of the game. Waiting for the next round.",
+    "playerInactiveOutOfGame": "You are out of the game. Better luck next time.",
     "errorImageDownload": "Failed to download image. Status: {{status}}",
     "errorImageDownloadGeneric": "Failed to download image: {{message}}",
     "imageWaiting": "Image will appear here.",

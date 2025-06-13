@@ -185,7 +185,7 @@ src/
   - IDLE: Return to default state
   - BUYOUT_OPEN: Open buyout option
   - BUYOUT_COMPLETE: Process buyout completion
-  - UPDATE_PLAYER: Update player information
+  - UPDATE_PLAYERS: Update player information
 
 ### REST API
 
@@ -234,7 +234,7 @@ export type BroadcastState =
   | 'IDLE'
   | 'BUYOUT_OPEN'
   | 'BUYOUT_COMPLETE'
-  | 'UPDATE_PLAYER';
+  | 'UPDATE_PLAYERS';
 
 // Quiz State Interface
 export interface iQuizSate {

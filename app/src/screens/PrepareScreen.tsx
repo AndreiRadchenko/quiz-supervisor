@@ -187,32 +187,6 @@ const PrepareScreen = () => {
     
   }, [isLoadingPlayer, isLoadingTiers, wsStatus, !!quizState]);
 
-  // Listen for WebSocket messages that require updates
-  useEffect(() => {
-    if (quizState && quizState.state === 'UPDATE_PLAYER') {
-      refetchPlayer();
-    }
-  }, [quizState?.state]);
-
-  // Navigate to QuestionScreen when server sends QUESTION_OPEN
-  // useEffect(() => {
-  //   if (quizState?.state === 'QUESTION_OPEN') {
-  //     navigation.navigate('Question');
-  //   }
-  // }, [quizState?.state, navigation]);
-
-  // Navigate to DefaultScreen if player is not active or game state is not PRE/OPEN/BUYOUT_OPEN
-  // useEffect(() => {
-  //   if (playerData && !playerData.isActive) {
-  //     navigation.navigate('Default');
-  //     return;
-  //   }
-    
-  //   if (quizState && !['QUESTION_PRE', 'QUESTION_OPEN', 'BUYOUT_OPEN'].includes(quizState.state)) {
-  //     navigation.navigate('Default');
-  //   }
-  // }, [playerData?.isActive, quizState?.state, navigation]);
-
   // Handle image download (without sending check message)
   useEffect(() => {
     let isMounted = true;
@@ -309,7 +283,7 @@ const PrepareScreen = () => {
     ) {
       const checkMessage: iCheckMessage = {
         seat: seatNumber,
-        imageloaded: true,
+        imageLoaded: true,
         tierNumber: quizState.tierNumber,
       };
       sendMessageRef.current(checkMessage);

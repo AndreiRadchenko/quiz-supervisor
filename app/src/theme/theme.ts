@@ -13,7 +13,7 @@ export const createTheme = (colorScheme: ColorScheme) => ({
     container: {
       flex: 1,
       backgroundColor: colors[colorScheme].background,
-      padding: spacing.md,
+      padding: spacing.xs,
     },
     card: {
       backgroundColor: colors[colorScheme].card,

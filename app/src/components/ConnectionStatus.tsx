@@ -104,16 +104,19 @@ export const ConnectionStatus = (props: ConnectionStatusProps) => {
             { backgroundColor: getStatusColor(wsStatus) }
           ]} 
         />
-        <Text style={styles.label}>WebSocket:</Text>
-        <Text style={[
-          styles.status,
-          wsStatus === 'connected' && styles.connected,
-          wsStatus === 'disconnected' && styles.disconnected,
-          wsStatus === 'connecting' && styles.connecting,
-          wsStatus === 'error' && styles.error,
-        ]}>
-          {wsStatus.charAt(0).toUpperCase() + wsStatus.slice(1)}
-        </Text>
+        <Text style={styles.label}>WebSocket</Text>
+
+        {wsStatus !== 'connected' && (
+          <Text style={[
+            styles.status,
+            wsStatus === 'disconnected' && styles.disconnected,
+            wsStatus === 'connecting' && styles.connecting,
+            wsStatus === 'error' && styles.error,
+          ]}>
+            {wsStatus.charAt(0).toUpperCase() + wsStatus.slice(1)}
+          </Text>
+        )}
+        
       </View>
 
       {/* Show errors */}

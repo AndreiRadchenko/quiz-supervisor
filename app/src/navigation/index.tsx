@@ -42,50 +42,61 @@ const AppNavigator = () => {
   // Handle navigation based on WebSocket state
   useEffect(() => {
     if (!navigationRef.current?.isReady()) return;
-
-    // Don't navigate if no data
     if (!playerData || !effectiveState) return;
 
-    // If player is not active, always go to default screen
     if (!playerData.isActive) {
-      navigationRef.current?.navigate('Default');
+      navigationRef.current?.reset({
+        index: 0,
+        routes: [{ name: 'Default' }],
+      });
       return;
     }
 
-    // Navigate based on quiz state
     const currentRoute = navigationRef.current?.getCurrentRoute()?.name;
 
     switch (effectiveState.state) {
       case 'QUESTION_PRE':
-      
-        // Allow navigation to Prepare only if not already there
         if (currentRoute !== 'Prepare') {
-          console.log('Navigating to Prepare screen based on QUESTION_PRE state');
+          console.log('Navigating to Prepare screen');
           navigationRef.current?.navigate('Prepare');
         }
         break;
+
       case 'QUESTION_OPEN':
-        // Navigate to Question screen when question opens
+      case 'BUYOUT_OPEN':
         if (currentRoute !== 'Question') {
-          console.log('Navigating to Question screen based on QUESTION_OPEN state');
-          navigationRef.current?.navigate('Question');
+          console.log('Resetting to Question screen to force remount');
+          navigationRef.current?.reset({
+            index: 0,
+            routes: [{
+              name: 'Question',
+              params: {
+                timestamp: Date.now(),
+                tierNumber: effectiveState.tierNumber,
+                state: effectiveState.state
+              }
+            }],
+          });
         }
         break;
+
       case 'IDLE':
       case 'QUESTION_CLOSED':
       case 'QUESTION_COMPLETE':
       case 'BUYOUT_COMPLETE':
-        // Return to Default when question is complete or game is idle
         if (currentRoute !== 'Default') {
-          console.log('Navigating to Default screen based on state:', effectiveState.state);
-          navigationRef.current?.navigate('Default');
+          console.log('Resetting to Default screen');
+          navigationRef.current?.reset({
+            index: 0,
+            routes: [{ name: 'Default' }],
+          });
         }
         break;
-      // Other states don't trigger navigation changes
+
       default:
         console.log('No navigation change for state:', effectiveState.state);
     }
-  }, [effectiveState, playerData, navigationRef]);
+  }, [effectiveState, playerData]);
 
   return (
     <NavigationContainer ref={navigationRef}>
@@ -93,12 +104,15 @@ const AppNavigator = () => {
         initialRouteName="Default"
         screenOptions={{
           headerShown: false,
-          cardStyle: { backgroundColor: '#FFFFFF' }
+          cardStyle: { backgroundColor: '#1a1a1a' },
         }}
       >
         <Stack.Screen name="Default" component={DefaultScreen} />
         <Stack.Screen name="Prepare" component={PrepareScreen} />
-        <Stack.Screen name="Question" component={QuestionScreen} />
+        <Stack.Screen
+          name="Question"
+          component={QuestionScreen}
+        />
         <Stack.Screen name="Admin" component={AdminScreen} />
       </Stack.Navigator>
     </NavigationContainer>

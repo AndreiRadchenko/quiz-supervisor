@@ -15,7 +15,7 @@
     "errorConnecting": "Помилка підключення до сервера. Перевірте IP-адресу.",
     "errorPlayerData": "Помилка завантаження даних гравця. Перевірте номер місця або сервер.",
     "waitingForGame": "Очікування початку гри...",
-    "playerInactive": "Ви зараз неактивні. Очікуйте наступної гри.",
+    "playerInactive": "Ви зараз неактивні.",
     "webSocketDisconnected": "З'єднання з сервером втрачено. Спроба повторного підключення..."
   },
   "prepareScreen": {
@@ -24,7 +24,7 @@
     "readyForTier": "Приготуйтеся до: {{tierLegend}}",
     "imageLoading": "Зображення питання завантажується...",
     "waitingForNextQuestion": "Очікування наступного питання...",
-    "playerInactiveOutOfGame": "Ви вибули з гри. Очікуйте наступного раунду.",
+    "playerInactiveOutOfGame": "Ви вибули з гри. Пощастить наступного разу.",
     "errorImageDownload": "Не вдалося завантажити зображення. Статус: {{status}}",
     "errorImageDownloadGeneric": "Не вдалося завантажити зображення: {{message}}",
     "imageWaiting": "Зображення з'явиться тут.",

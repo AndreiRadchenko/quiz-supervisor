@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { queryClient } from '../store/queryClient';
 import { iQuizSate, BroadcastState, iCheckMessage, iAnswerMessage } from '../types';
+import { fetchQuizState } from '../api';
 export type WebSocketStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
 const MAX_RECONNECT_ATTEMPTS = 10;
 const INITIAL_RECONNECT_DELAY = 1000; // 1 second
@@ -93,9 +94,11 @@ export const useWebSocket = () => {
           // Parse the message data to see what structure we're getting
           const messageReceived = await JSON.parse(event.data as string);
           console.warn('WebSocket message:', messageReceived);
-          
+          if (['TIMER', 'ANSWER'].includes(messageReceived.event)) {
+            return; // Ignore timer messages
+          }
           // Handle the case where the message has a payload property (event, payload structure)
-          if (messageReceived.payload && typeof messageReceived.payload === 'object') {
+          if (messageReceived.payload && typeof messageReceived.payload === 'object' ) {
             if (messageReceived.payload.state === quizState?.state) {
               console.log('Quiz state unchanged, not updating:', messageReceived.payload.state);
               return; // Avoid unnecessary updates if state hasn't changed
@@ -111,11 +114,15 @@ export const useWebSocket = () => {
                 break;
               case 'QUESTION_COMPLETE':
               case 'BUYOUT_COMPLETE':
-              case 'UPDATE_PLAYER':
                 queryClient.refetchQueries({ queryKey: ['player', seatNumber] });
                 break;
             }
-          } 
+          } else if (messageReceived.event === 'UPDATE_PLAYERS') {
+            queryClient.refetchQueries({ queryKey: ['player', seatNumber] });
+            queryClient.refetchQueries({ queryKey: ['tiers'] });
+            const updatedState = await fetchQuizState(serverIP);
+            setQuizState(updatedState);
+          }
            else {
             console.warn('WebSocket message format not recognized:', messageReceived);
           }

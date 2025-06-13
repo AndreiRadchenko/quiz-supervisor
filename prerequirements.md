@@ -190,7 +190,7 @@ Then parse required data to the tier state.
 
 ## Obtaining player name
 
-After seat number has been assigned, application does api request to get player data. player state should also be updated from request `GET {{base_url}}/seats/[seat]` on application start and application update by draggin screen from upper to lower screen part. Also player state updates from request `GET {{base_url}}/seats/[seat]` on websocket event 'UPDATE_PLAYER'
+After seat number has been assigned, application does api request to get player data. player state should also be updated from request `GET {{base_url}}/seats/[seat]` on application start and application update by draggin screen from upper to lower screen part. Also player state updates from request `GET {{base_url}}/seats/[seat]` on websocket event 'UPDATE_PLAYERS'
 
 ## Backend State Change Function
 
@@ -205,7 +205,7 @@ export type BroadcastState =
   | 'IDLE'
   | 'BUYOUT_OPEN'
   | 'BUYOUT_COMPLETE'
-  | 'UPDATE_PLAYER';
+  | 'UPDATE_PLAYERS';
 
 export interface iQuizSate {
   showNumber: Date;

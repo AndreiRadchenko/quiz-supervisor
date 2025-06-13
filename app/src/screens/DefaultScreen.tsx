@@ -32,42 +32,6 @@ const DefaultScreen = () => {
     return null;
   }, [wsStatus, wsQuizState]);
 
-  // Listen for messages that might require updating player data
-  // useEffect(() => {
-  //   if (quizState) {
-  //     // Navigate based on the new state
-  //     switch (quizState.state) {
-  //       case 'UPDATE_PLAYER':
-  //         refetchPlayer();
-  //         break;
-  //       case 'QUESTION_PRE':
-  //         // Handle pre-question state
-  //         if (playerData?.isActive) {
-  //           navigation.navigate('Prepare');
-  //         }
-  //         break;
-  //       case 'QUESTION_OPEN':
-  //         // Handle question open state
-  //         if (playerData?.isActive) {
-  //           navigation.navigate('Question');
-  //         }
-  //         break;
-  //       case 'IDLE':
-  //       case 'QUESTION_CLOSED':
-  //       case 'QUESTION_COMPLETE':
-  //       case 'BUYOUT_COMPLETE':
-  //         // Stay on DefaultScreen or navigate to it if not already there
-  //         if (navigation.getState().routes[navigation.getState().index].name !== 'Default') {
-  //           navigation.navigate('Default');
-  //         }
-  //         break;
-  //       default:
-  //         // Handle any other states or do nothing
-  //         break;
-  //     }
-  //   }
-  // }, [quizState, refetchPlayer, navigation, playerData?.isActive]);
-
   const handleLongPress = () => {
     navigation.navigate('Admin');
   };

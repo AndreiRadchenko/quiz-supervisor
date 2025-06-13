@@ -232,7 +232,7 @@ src/
         2.  (App remains on/transitions to Default Screen).
     *   `IDLE`:
         1.  Transition to Default Screen.
-    *   `UPDATE_PLAYER`:
+    *   `UPDATE_PLAYERS`:
         1.  Update `player` state.
 
 ### REST API
@@ -287,7 +287,7 @@ export type BroadcastState =
   | 'IDLE'
   | 'BUYOUT_OPEN'
   | 'BUYOUT_COMPLETE'
-  | 'UPDATE_PLAYER'; // Client listens for this
+  | 'UPDATE_PLAYERS'; // Client listens for this
 
 // Payload for most WebSocket events
 export interface iQuizSate { // As received from WebSocket
@@ -406,7 +406,7 @@ export type AppTierType = {
     *   On `QUESTION_PRE` WebSocket event: Invalidate and refetch.
     *   On `QUESTION_COMPLETE` WebSocket event: Invalidate and refetch.
     *   On `BUYOUT_COMPLETE` WebSocket event: Invalidate and refetch.
-    *   On `UPDATE_PLAYER` WebSocket event: Invalidate and refetch.
+    *   On `UPDATE_PLAYERS` WebSocket event: Invalidate and refetch.
     *   On app reload/pull-to-refresh action.
 
 ### Tier State Updates (`AppTierType`)
