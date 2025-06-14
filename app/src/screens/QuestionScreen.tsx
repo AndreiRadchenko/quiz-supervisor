@@ -22,6 +22,7 @@ import { getKeyboardProps } from '../utils/keyboard';
 import { AnswerOptions } from '../components/AnswerOptions';
 import { ConnectionStatus } from '../components/ConnectionStatus';
 import { ConfirmationDialog } from '../components/ConfirmationDialog';
+import { NumberInput } from '../components/NumberInput';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -79,9 +80,10 @@ const QuestionScreen = () => {
     },
     tierLegendText: {
       ...theme.components.text.heading,
-      fontSize: theme.fontSize.xl,
+      fontSize: theme.fontSize['2xl'],
       textAlign: 'center',
       marginBottom: theme.spacing.lg,
+      color: theme.colors.accent,
     },
     questionImage: {
       width: '100%',
@@ -252,6 +254,12 @@ const QuestionScreen = () => {
     }
     return null;
   }, [quizState?.state, quizState?.tierNumber, !!tiersData]);
+
+  // Dynamic scroll container style based on question type
+  const scrollContentContainerStyle = useMemo(() => ({
+    ...styles.scrollContentContainer,
+    paddingBottom: currentAppTier?.questionType === 'TEXT NUMERIC' && !isBuyoutTier ? 280 : 0,
+  }), [styles.scrollContentContainer, currentAppTier?.questionType, isBuyoutTier]);
 
   // Force cache refresh by adding tier number as query parameter
   const localImageUri = useMemo(() => {
@@ -454,13 +462,6 @@ const QuestionScreen = () => {
     return quizState?.state === 'BUYOUT_OPEN' && !playerData.boughtOut;
   }, [quizState?.state, playerData?.boughtOut, actionTaken]);
 
-  // Check if player has already used a pass for the current question's allowance
-  // const hasUsedApplicablePass = useMemo(() => {
-  //   if (!playerData || !currentAppTier) return false;
-  //   if (currentAppTier.tierNumber <= 5) return playerData.usedPassOne;
-  //   return playerData.usedPassTwo;
-  // }, [playerData?.usedPassOne, playerData?.usedPassTwo, currentAppTier?.tierNumber]);
-
   const textInputJSX = useMemo(() => {
     console.log('🎯 Rendering text input for question type:', currentAppTier?.questionType);
     if (!currentAppTier || (currentAppTier.questionType !== 'TEXT' && currentAppTier.questionType !== 'TEXT NUMERIC')) return null;
@@ -538,7 +539,7 @@ const QuestionScreen = () => {
   }
   
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContentContainer}>
+    <ScrollView style={styles.container} contentContainerStyle={scrollContentContainerStyle}>
       <View style={styles.headerContainer}>
         <Text style={styles.headerText}>
           {`${t('seatNumber')}: ${seatNumber} | ${playerData.name}`}
@@ -597,6 +598,17 @@ const QuestionScreen = () => {
           onOptionSelect={setSelectedOption}
         />
       )}
+
+      {/* Use NumberInput component for numeric text questions */}
+      {currentAppTier.questionType === 'TEXT NUMERIC' && !isBuyoutTier && !actionTaken && (
+        <NumberInput
+          value={currentAnswer}
+          onValueChange={setCurrentAnswer}
+          placeholder={t('questionScreen.answerPlaceholder')}
+          disabled={!!actionTaken}
+        />
+      )}
+
       {/* {textInputJSX} */}
 
       {/* Action taken status messages */}
