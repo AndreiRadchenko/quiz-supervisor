@@ -1,8 +1,11 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState, useRef, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { useWebSocketContext } from '../context/WebSocketContext';
 import { useTheme } from '../theme';
+import { RootStackParamList } from '../navigation/types';
 
 interface ConnectionStatusProps {
   style?: any;
@@ -14,8 +17,43 @@ export const ConnectionStatus = (props: ConnectionStatusProps) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
   const { status: wsStatus, errorDetails } = useWebSocketContext();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+
+  const [tapCount, setTapCount] = useState(0);
+  const tapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const showTitleResolved = showTitle ?? true;
+
+  const handleWebSocketTap = useCallback(() => {
+    const newTapCount = tapCount + 1;
+    setTapCount(newTapCount);
+
+    // Clear existing timeout
+    if (tapTimeoutRef.current) {
+      clearTimeout(tapTimeoutRef.current);
+    }
+
+    // If 4 taps reached, navigate to Admin screen
+    if (newTapCount >= 4) {
+      setTapCount(0);
+      navigation.navigate('Admin');
+      return;
+    }
+
+    // Set timeout to reset tap count after 2 seconds
+    tapTimeoutRef.current = setTimeout(() => {
+      setTapCount(0);
+    }, 2000);
+  }, [tapCount, navigation]);
+
+  // Cleanup timeout on unmount
+  React.useEffect(() => {
+    return () => {
+      if (tapTimeoutRef.current) {
+        clearTimeout(tapTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const styles = StyleSheet.create({
     container: {
@@ -49,6 +87,8 @@ export const ConnectionStatus = (props: ConnectionStatusProps) => {
       ...theme.components.text.body,
       ...theme.components.text.muted,
       flex: 1,
+      paddingVertical: theme.spacing.xs, // Add padding for better touch target
+      paddingHorizontal: theme.spacing.xs,
     },
     status: {
       ...theme.components.text.body,
@@ -104,7 +144,9 @@ export const ConnectionStatus = (props: ConnectionStatusProps) => {
             { backgroundColor: getStatusColor(wsStatus) }
           ]} 
         />
-        <Text style={styles.label}>WebSocket</Text>
+        <TouchableOpacity onPress={handleWebSocketTap} activeOpacity={0.7}>
+          <Text style={styles.label}>WebSocket</Text>
+        </TouchableOpacity>
 
         {wsStatus !== 'connected' && (
           <Text style={[

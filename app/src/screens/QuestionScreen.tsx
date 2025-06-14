@@ -23,6 +23,7 @@ import { AnswerOptions } from '../components/AnswerOptions';
 import { ConnectionStatus } from '../components/ConnectionStatus';
 import { ConfirmationDialog } from '../components/ConfirmationDialog';
 import { NumberInput } from '../components/NumberInput';
+import { CustomTextInput } from '../components/TextInput';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -83,13 +84,12 @@ const QuestionScreen = () => {
       fontSize: theme.fontSize['2xl'],
       textAlign: 'center',
       marginBottom: theme.spacing.lg,
-      color: theme.colors.accent,
+      // color: theme.colors.accent,
     },
     questionImage: {
       width: '100%',
-     aspectRatio: 16 / 9, // Maintain 16:9 aspect ratio
+     aspectRatio: 16 / 9,
       marginBottom: theme.spacing.xl,
-      // backgroundColor: theme.colors.card,
       borderRadius: theme.borderRadius.md,
     },
     actionButtonsContainer: {
@@ -256,10 +256,19 @@ const QuestionScreen = () => {
   }, [quizState?.state, quizState?.tierNumber, !!tiersData]);
 
   // Dynamic scroll container style based on question type
-  const scrollContentContainerStyle = useMemo(() => ({
-    ...styles.scrollContentContainer,
-    paddingBottom: currentAppTier?.questionType === 'TEXT NUMERIC' && !isBuyoutTier ? 280 : 0,
-  }), [styles.scrollContentContainer, currentAppTier?.questionType, isBuyoutTier]);
+  const scrollContentContainerStyle = useMemo(() => {
+    let paddingBottom = 0;
+    if (currentAppTier?.questionType === 'TEXT NUMERIC' && !isBuyoutTier && !actionTaken) {
+      paddingBottom = 280; // Space for NumberInput
+    } else if (currentAppTier?.questionType === 'TEXT' && !isBuyoutTier && !actionTaken) {
+      paddingBottom = 320; // Space for CustomTextInput (slightly taller)
+    }
+    
+    return {
+      ...styles.scrollContentContainer,
+      paddingBottom,
+    };
+  }, [styles.scrollContentContainer, currentAppTier?.questionType, isBuyoutTier, actionTaken]);
 
   // Force cache refresh by adding tier number as query parameter
   const localImageUri = useMemo(() => {
@@ -462,36 +471,6 @@ const QuestionScreen = () => {
     return quizState?.state === 'BUYOUT_OPEN' && !playerData.boughtOut;
   }, [quizState?.state, playerData?.boughtOut, actionTaken]);
 
-  const textInputJSX = useMemo(() => {
-    console.log('🎯 Rendering text input for question type:', currentAppTier?.questionType);
-    if (!currentAppTier || (currentAppTier.questionType !== 'TEXT' && currentAppTier.questionType !== 'TEXT NUMERIC')) return null;
-    
-    // Get the simplest keyboard props for this question type
-    const keyboardProps = getKeyboardProps(currentAppTier.questionType, locale);
-    
-    return (
-      <View style={styles.textInputContainer}>
-        <TextInput
-          style={styles.textInput}
-          placeholder={t('questionScreen.answerPlaceholder')}
-          value={currentAnswer}
-          onChangeText={setCurrentAnswer}
-          {...keyboardProps} // Apply the simplest keyboard configuration
-          clearButtonMode="while-editing" // Show clear button on iOS
-          editable={!actionTaken}
-          autoFocus={true} // Automatically open keyboard for text/numeric questions
-        />
-        <TouchableOpacity
-          style={[styles.submitButton, (!!actionTaken || currentAnswer.trim() === '') && styles.disabledButton]}
-          onPress={() => handleAnswerSubmit(currentAnswer)}
-          disabled={!!actionTaken || currentAnswer.trim() === ''}
-        >
-          <Text style={styles.submitButtonText}>{t('questionScreen.submitAnswer')}</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }, [currentAppTier?.questionType, currentAnswer, actionTaken, handleAnswerSubmit, t, locale]);
-
   if (isLoadingPlayer || isLoadingTiers || (wsStatus === 'connecting' && !quizState)) {
     return (
       <View style={styles.statusContainer}>
@@ -555,11 +534,8 @@ const QuestionScreen = () => {
           resizeMode="contain"
         />
       )}
-      
-      {/* {quizState.questionText && <Text style={styles.questionText}>{quizState.questionText}</Text>} */}
 
-     
-        <View style={styles.actionButtonsContainer}>
+     {!actionTaken && (       <View style={styles.actionButtonsContainer}>
         {canUsePass  && (
           <TouchableOpacity
             style={[styles.actionButton, styles.passButton, !!actionTaken && styles.disabledButton]}
@@ -587,7 +563,8 @@ const QuestionScreen = () => {
             <Text style={[styles.actionButtonText, styles.actionSubmitButtonText]}>{t('questionScreen.submitAnswer')}</Text>
           </TouchableOpacity>
         )}
-      </View>
+      </View>)}
+ 
 
       {/* Use AnswerOptions component for multiple choice questions */}
       {currentAppTier.questionType === 'MULTIPLE' && !isBuyoutTier && (
@@ -609,7 +586,16 @@ const QuestionScreen = () => {
         />
       )}
 
-      {/* {textInputJSX} */}
+      {/* Use CustomTextInput component for text questions */}
+      {currentAppTier.questionType === 'TEXT' && !isBuyoutTier && !actionTaken && (
+        <CustomTextInput
+          value={currentAnswer}
+          onValueChange={setCurrentAnswer}
+          placeholder={t('questionScreen.answerPlaceholder')}
+          disabled={!!actionTaken}
+          locale={locale || 'en'}
+        />
+      )}
 
       {/* Action taken status messages */}
       {/* {actionTaken === 'answered' && autoAnswer && (

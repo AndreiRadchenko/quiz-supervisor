@@ -32,10 +32,6 @@ const DefaultScreen = () => {
     return null;
   }, [wsStatus, wsQuizState]);
 
-  const handleLongPress = () => {
-    navigation.navigate('Admin');
-  };
-
   // Create styles using theme
   const styles = StyleSheet.create({
     container: {
@@ -107,7 +103,7 @@ const DefaultScreen = () => {
   });
 
   return (
-    <TouchableOpacity onLongPress={handleLongPress} style={styles.container} activeOpacity={1}>
+    <TouchableOpacity  style={styles.container} activeOpacity={1}>
 
 
       <View style={{width: '100%',  marginHorizontal: 'auto', marginTop: theme.spacing['4xl']}}>
