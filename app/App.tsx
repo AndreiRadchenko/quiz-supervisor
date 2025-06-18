@@ -1,3 +1,5 @@
+import 'react-native-gesture-handler';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import './src/i18n'; // Initialize i18n
 import { AppProvider } from './src/context/AppContext';
@@ -6,10 +8,8 @@ import { ThemeProvider } from './src/theme';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './src/store/queryClient';
 import AppNavigator from './src/navigation'; // Import the AppNavigator
-import { View } from 'react-native'; // Add View import
-import * as SplashScreen from 'expo-splash-screen';
-import { useCallback, useEffect, useState } from 'react';
 
+// import 'expo-dev-client';
 
 export default function App() {
 
@@ -18,10 +18,12 @@ export default function App() {
       <ThemeProvider forcedColorScheme="dark">
         <AppProvider>
           <WebSocketProvider>
-            <View style={{ flex: 1, backgroundColor: '#1a1a1a' }}>
+            <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#1a1a1a' }}>
+
               <AppNavigator /> {/* Render the AppNavigator */}
               <StatusBar style="light" hidden={true} />
-            </View>
+ 
+            </GestureHandlerRootView>
           </WebSocketProvider>
         </AppProvider>
       </ThemeProvider>

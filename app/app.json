@@ -1,27 +1,42 @@
 {
   "expo": {
+    "plugins": [
+      [
+        "expo-dev-client",
+        {
+          "launchMode": "most-recent"
+        }
+      ],
+      "expo-router",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
+    ],
     "name": "Quiz Player",
     "slug": "quizPlayer",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/logo.png",
+    "icon": "./assets/logo-square.png",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
-    "statusBarHidden": true,
     "backgroundColor": "#1a1a1a",
     "splash": {
-      "image": "./assets/splash-logo-dark.png",
+      "image": "./assets/logo-square.png",
       "resizeMode": "cover",
       "backgroundColor": "#1a1a1a",
       "dark": {
-        "image": "./assets/splash-logo-dark.png",
+        "image": "./assets/logo-square.png",
         "resizeMode": "cover",
         "backgroundColor": "#1a1a1a"
       }
     },
     "ios": {
       "supportsTablet": true,
-      "statusBarHidden": true,
       "backgroundColor": "#1a1a1a",
       "splash": {
         "image": "./assets/splash-logo-dark.png",
@@ -38,43 +53,30 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/logo.png",
+        "foregroundImage": "./assets/logo-square.png",
         "backgroundColor": "#1a1a1a"
       },
       "backgroundColor": "#1a1a1a",
       "splash": {
-        "image": "./assets/splash-logo-dark.png",
+        "image": "./assets/logo-square.png",
         "resizeMode": "cover",
         "backgroundColor": "#1a1a1a",
-        "mdpi": "./assets/splash-logo-dark.png",
-        "hdpi": "./assets/splash-logo-dark.png",
-        "xhdpi": "./assets/splash-logo-dark.png",
-        "xxhdpi": "./assets/splash-logo-dark.png",
-        "xxxhdpi": "./assets/splash-logo-dark.png",
         "dark": {
-          "image": "./assets/splash-logo-dark.png",
+          "image": "./assets/logo-square.png",
           "resizeMode": "cover",
-          "backgroundColor": "#1a1a1a",
-          "mdpi": "./assets/splash-logo-dark.png",
-          "hdpi": "./assets/splash-logo-dark.png",
-          "xhdpi": "./assets/splash-logo-dark.png",
-          "xxhdpi": "./assets/splash-logo-dark.png",
-          "xxxhdpi": "./assets/splash-logo-dark.png"
+          "backgroundColor": "#1a1a1a"
         }
       },
-      "statusBar": {
-        "hidden": true,
-        "translucent": true,
-        "backgroundColor": "#1a1a1a"
-      },
-      "navigationBar": {
-        "visible": false,
-        "backgroundColor": "#1a1a1a"
-      }
+      "package": "com.andriiradchenko.quizPlayer"
     },
     "web": {
-      "favicon": "./assets/logo.png",
+      "favicon": "./assets/logo-square.png",
       "backgroundColor": "#1a1a1a"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "9fd7a24f-e33c-4210-b521-b73cb970ccab"
+      }
     }
   }
 }
