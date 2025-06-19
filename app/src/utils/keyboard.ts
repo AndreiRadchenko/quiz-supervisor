@@ -1,12 +1,15 @@
 import { Platform, Keyboard, KeyboardTypeOptions } from 'react-native';
 import * as Localization from 'expo-localization';
 
-export const getSimpleKeyboardType = (questionType: 'TEXT' | 'TEXT NUMERIC', locale?: string): KeyboardTypeOptions => {
+export const getSimpleKeyboardType = (
+  questionType: 'TEXT' | 'TEXT NUMERIC',
+  locale?: string
+): KeyboardTypeOptions => {
   if (questionType === 'TEXT NUMERIC') {
     // Use numeric for numbers - simplest numeric keyboard
     return 'decimal-pad';
   }
-  
+
   // For text, use the default keyboard which will respect system locale
   return 'default';
 };
@@ -23,7 +26,10 @@ export const ensureKeyboardLocale = (locale: string) => {
   }
 };
 
-export const getKeyboardProps = (questionType: 'TEXT' | 'TEXT NUMERIC', locale?: string) => {
+export const getKeyboardProps = (
+  questionType: 'TEXT' | 'TEXT NUMERIC',
+  locale?: string
+) => {
   return {
     keyboardType: getSimpleKeyboardType(questionType, locale),
     autoCorrect: false,

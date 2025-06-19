@@ -7,7 +7,9 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.1.2",
@@ -16,30 +18,31 @@
     "@react-navigation/stack": "^7.3.3",
     "@reduxjs/toolkit": "^2.8.2",
     "@tanstack/react-query": "^5.79.0",
+    "expo": "~53.0.11",
+    "expo-build-properties": "~0.14.6",
+    "expo-dev-client": "~5.2.0",
     "expo-file-system": "^18.1.10",
     "expo-localization": "^16.1.5",
     "expo-navigation-bar": "~4.2.5",
     "expo-router": "~5.1.0",
+    "expo-splash-screen": "~0.30.9",
     "expo-status-bar": "~2.2.3",
+    "expo-system-ui": "~5.0.8",
     "i18next": "^25.2.1",
     "react": "19.0.0",
     "react-i18next": "^15.5.2",
     "react-native": "0.79.3",
+    "react-native-gesture-handler": "~2.24.0",
     "react-native-safe-area-context": "^5.4.0",
     "react-native-screens": "^4.11.1",
     "react-native-sse": "^1.2.1",
-    "react-redux": "^9.2.0",
-    "expo-system-ui": "~5.0.8",
-    "expo-splash-screen": "~0.30.9",
-    "expo": "~53.0.11",
-    "expo-dev-client": "~5.2.0",
-    "react-native-gesture-handler": "~2.24.0",
-    "expo-build-properties": "~0.14.6"
+    "react-redux": "^9.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@types/react": "~19.0.10",
     "expo": "^53.0.9",
+    "prettier": "^3.5.3",
     "typescript": "~5.8.3"
   },
   "private": true

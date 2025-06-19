@@ -1,32 +1,38 @@
-import React, { createContext, useContext, ReactElement, useEffect } from 'react';
+import React, {
+  createContext,
+  useContext,
+  ReactElement,
+  useEffect,
+} from 'react';
 import { useWebSocket } from '../hooks/useWebSocket';
-import { iQuizSate, iCheckMessage, iAnswerMessage } from '../types';
+import { iQuizSate, iCheckMessage, iAnswerState } from '../types';
 import { WebSocketStatus } from '../hooks/useWebSocket';
-import { queryClient } from '../store/queryClient';
 import { useAppContext } from './AppContext';
 import { fetchQuizState } from '../api';
 
 interface WebSocketContextType {
+  answers: iAnswerState[];
+  setAnswers: React.Dispatch<React.SetStateAction<iAnswerState[]>>;
   status: WebSocketStatus;
   quizState: iQuizSate | null;
-  setQuizState: (state: iQuizSate | null) => void;
+  setQuizState: React.Dispatch<React.SetStateAction<iQuizSate | null>>;
   errorDetails: string | null;
-  sendMessage: (message: iCheckMessage | iAnswerMessage) => void;
+  sendMessage: (message: iCheckMessage | iAnswerState) => void;
   connectWebSocket: () => void;
   disconnectWebSocket: () => void;
 }
 
 const WebSocketContext = createContext<WebSocketContextType | null>(null);
 
-export const WebSocketProvider: React.FC<{ children: ReactElement }> = ({ children }) => {
-  const { serverIP, seatNumber } = useAppContext();
+export const WebSocketProvider: React.FC<{ children: ReactElement }> = ({
+  children,
+}) => {
+  const { serverIP } = useAppContext();
   const webSocketState = useWebSocket();
   useEffect(() => {
     const initializeWebSocket = async () => {
       // Log the initial state for debugging
       console.log('WebSocketProvider initialized with state:', webSocketState);
-      queryClient.refetchQueries({ queryKey: ['player', seatNumber] });
-      queryClient.refetchQueries({ queryKey: ['tiers'] });
       const updatedState = await fetchQuizState(serverIP);
       webSocketState.setQuizState(updatedState);
     };
@@ -47,7 +53,9 @@ export const WebSocketProvider: React.FC<{ children: ReactElement }> = ({ childr
 export const useWebSocketContext = () => {
   const context = useContext(WebSocketContext);
   if (!context) {
-    throw new Error('useWebSocketContext must be used within a WebSocketProvider');
+    throw new Error(
+      'useWebSocketContext must be used within a WebSocketProvider'
+    );
   }
   return context;
 };

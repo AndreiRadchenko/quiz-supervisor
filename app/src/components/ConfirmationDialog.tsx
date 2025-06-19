@@ -151,7 +151,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
         <View style={styles.dialogContainer}>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.message}>{message}</Text>
-          
+
           <View style={styles.buttonContainer}>
             {!isWarning && cancelText && onCancel && (
               <TouchableOpacity
@@ -161,15 +161,14 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
                 <Text style={styles.cancelButtonText}>{cancelText}</Text>
               </TouchableOpacity>
             )}
-            
+
             <TouchableOpacity
-              style={[
-                styles.button, 
-                getConfirmButtonStyle(),
-              ]}
+              style={[styles.button, getConfirmButtonStyle()]}
               onPress={onConfirm}
             >
-              <Text style={[styles.confirmButtonText, getConfirmButtonTextStyle()]}>
+              <Text
+                style={[styles.confirmButtonText, getConfirmButtonTextStyle()]}
+              >
                 {confirmText}
               </Text>
             </TouchableOpacity>

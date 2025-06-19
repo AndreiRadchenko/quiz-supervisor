@@ -59,12 +59,12 @@ export const ConnectionStatus = (props: ConnectionStatusProps) => {
     container: {
       // ...theme.components.card,
       position: 'absolute',
-        bottom: theme.spacing.md,
-        left: theme.spacing.md,
-        right: theme.spacing.md,
-        // backgroundColor: `${theme.colors.card}F0`, // Semi-transparent
-        padding: theme.spacing.sm,
-        borderRadius: theme.borderRadius.md,
+      bottom: theme.spacing.md,
+      left: theme.spacing.md,
+      right: theme.spacing.md,
+      // backgroundColor: `${theme.colors.card}F0`, // Semi-transparent
+      padding: theme.spacing.sm,
+      borderRadius: theme.borderRadius.md,
       ...style,
     },
     title: {
@@ -133,32 +133,29 @@ export const ConnectionStatus = (props: ConnectionStatusProps) => {
 
   return (
     <View style={styles.container}>
-      {showTitleResolved && (
-        <Text style={styles.title}>{t('defaultScreen.connectionStatus')}</Text>
-      )}
-      
       <View style={styles.row}>
-        <View 
+        <View
           style={[
-            styles.statusIndicator, 
-            { backgroundColor: getStatusColor(wsStatus) }
-          ]} 
+            styles.statusIndicator,
+            { backgroundColor: getStatusColor(wsStatus) },
+          ]}
         />
         <TouchableOpacity onPress={handleWebSocketTap} activeOpacity={0.7}>
           <Text style={styles.label}>WebSocket</Text>
         </TouchableOpacity>
 
         {wsStatus !== 'connected' && (
-          <Text style={[
-            styles.status,
-            wsStatus === 'disconnected' && styles.disconnected,
-            wsStatus === 'connecting' && styles.connecting,
-            wsStatus === 'error' && styles.error,
-          ]}>
+          <Text
+            style={[
+              styles.status,
+              wsStatus === 'disconnected' && styles.disconnected,
+              wsStatus === 'connecting' && styles.connecting,
+              wsStatus === 'error' && styles.error,
+            ]}
+          >
             {wsStatus.charAt(0).toUpperCase() + wsStatus.slice(1)}
           </Text>
         )}
-        
       </View>
 
       {/* Show errors */}

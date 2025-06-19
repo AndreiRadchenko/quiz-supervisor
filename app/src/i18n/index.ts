@@ -41,7 +41,7 @@ i18n
     },
     react: {
       useSuspense: false, // Using suspense for translations can be tricky in React Native
-    }
+    },
   });
 
 export default i18n;

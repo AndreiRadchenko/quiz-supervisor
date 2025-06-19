@@ -4,17 +4,17 @@ export const enableFullscreen = () => {
   if (Platform.OS === 'android') {
     // Hide the status bar on Android
     StatusBar.setHidden(true, 'fade');
-    
+
     // Set immersive mode (hides navigation bar as well)
     if (StatusBar.setBarStyle) {
       StatusBar.setBarStyle('dark-content', true);
     }
-    
+
     // For Android, we can also set the background color to be transparent
     if (StatusBar.setBackgroundColor) {
       StatusBar.setBackgroundColor('transparent', true);
     }
-    
+
     // Enable immersive mode if available
     if (StatusBar.setTranslucent) {
       StatusBar.setTranslucent(true);

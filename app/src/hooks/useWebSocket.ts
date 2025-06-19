@@ -1,50 +1,45 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { queryClient } from '../store/queryClient';
-import { iQuizSate, BroadcastState, iCheckMessage, iAnswerMessage } from '../types';
+import { iQuizSate, iCheckMessage, iAnswerState } from '../types';
 import { fetchQuizState } from '../api';
-export type WebSocketStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
+export type WebSocketStatus =
+  | 'connecting'
+  | 'connected'
+  | 'disconnected'
+  | 'error';
 const MAX_RECONNECT_ATTEMPTS = 10;
 const INITIAL_RECONNECT_DELAY = 1000; // 1 second
 const MAX_RECONNECT_DELAY = 30000; // 30 seconds
 
 export const useWebSocket = () => {
-  const { serverIP, seatNumber } = useAppContext();
+  const { serverIP } = useAppContext();
   const [status, setStatus] = useState<WebSocketStatus>('disconnected');
   const [quizState, setQuizState] = useState<iQuizSate | null>(null);
+  const [answers, setAnswers] = useState<iAnswerState[]>([]);
   const [errorDetails, setErrorDetails] = useState<string | null>(null); // Changed to string only
   const webSocketRef = useRef<WebSocket | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Improved state setter with logging and validation
-  // const updateQuizState = useCallback((newState: iQuizSate | null) => {
-  //   if (newState?.state === quizState?.state) {
-  //     console.log('Quiz state unchanged, not updating:', newState?.state);
-  //     return; // Avoid unnecessary updates if state hasn't changed
-  //   }
-  //   if (newState) {
-  //     console.log('Setting quiz state:', JSON.stringify(newState, null, 2));
-  //   }
-  //   setQuizState(newState);
-  // }, []);
-  
   // Improved network error detection
   const connect = useCallback(() => {
-    if (!serverIP || seatNumber === null) {
+    if (!serverIP) {
       setStatus('disconnected');
       setErrorDetails(null);
       return;
     }
-    if (webSocketRef.current &&
-        (webSocketRef.current.readyState === 1 || // WebSocket.OPEN
-         webSocketRef.current.readyState === 0)) { // WebSocket.CONNECTING
+    if (
+      webSocketRef.current &&
+      (webSocketRef.current.readyState === 1 || // WebSocket.OPEN
+        webSocketRef.current.readyState === 0)
+    ) {
+      // WebSocket.CONNECTING
       return;
     }
 
     setStatus('connecting');
     setErrorDetails(null);
-    
+
     const wsUrl = `ws://${serverIP}:5000/ws`;
     console.log('Connecting to WebSocket URL:', wsUrl);
 
@@ -55,13 +50,14 @@ export const useWebSocket = () => {
 
       // Set a timeout for connection attempts
       const connectionTimeout = setTimeout(() => {
-        if (ws.readyState !== 1) { // WebSocket.OPEN
+        if (ws.readyState !== 1) {
+          // WebSocket.OPEN
           console.warn('WebSocket connection timeout');
           ws.close();
           setStatus('error');
           setErrorDetails('Connection timeout - server did not respond');
         }
-      }, 10000); // 10 second timeout
+      }, 5000); // 5 second timeout
 
       ws.onopen = () => {
         clearTimeout(connectionTimeout);
@@ -73,58 +69,76 @@ export const useWebSocket = () => {
           clearTimeout(reconnectTimeoutRef.current);
           reconnectTimeoutRef.current = null;
         }
-        
-        // Send seat number identification after connection
-        // try {
-        //   if (seatNumber !== null) {
-        //     const identMessage = {
-        //       type: 'IDENTIFY',
-        //       seat: seatNumber
-        //     };
-        //     console.log('Sending identification message:', identMessage);
-        //     ws.send(JSON.stringify(identMessage));
-        //   }
-        // } catch (e) {
-        //   console.error('Failed to send identification message:', e);
-        // }
       };
 
-      ws.onmessage = async (event) => {
+      ws.onmessage = async event => {
         try {
           // Parse the message data to see what structure we're getting
           const messageReceived = await JSON.parse(event.data as string);
           console.warn('WebSocket message:', messageReceived);
-          if (['TIMER', 'ANSWER'].includes(messageReceived.event)) {
+
+          if (['TIMER', 'CHECK'].includes(messageReceived.event)) {
             return; // Ignore timer messages
-          }
-          // Handle the case where the message has a payload property (event, payload structure)
-          if (messageReceived.payload && typeof messageReceived.payload === 'object' ) {
-            if (messageReceived.payload.state === quizState?.state) {
-              console.log('Quiz state unchanged, not updating:', messageReceived.payload.state);
-              return; // Avoid unnecessary updates if state hasn't changed
-            }
-            // updateQuizState(messageReceived.payload);
-            setQuizState(messageReceived.payload);
-            
-            // Handle specific messages for query invalidation
-            switch (messageReceived.event) {
-              case 'QUESTION_PRE':
-                queryClient.refetchQueries({ queryKey: ['player', seatNumber] });
-                queryClient.refetchQueries({ queryKey: ['tiers'] });
-                break;
-              case 'QUESTION_COMPLETE':
-              case 'BUYOUT_COMPLETE':
-                queryClient.refetchQueries({ queryKey: ['player', seatNumber] });
-                break;
+          } else if (
+            [
+              'QUESTION_PRE',
+              'QUESTION_OPEN',
+              'BUYOUT_OPEN',
+              'IDLE',
+              'QUESTION_CLOSED',
+              'QUESTION_COMPLETE',
+              'BUYOUT_COMPLETE',
+            ].includes(messageReceived.event)
+          ) {
+            // Handle the case where the message has a payload property (event, payload structure)
+            if (
+              messageReceived.payload &&
+              typeof messageReceived.payload === 'object'
+            ) {
+              // if (messageReceived.payload.state === quizState?.state) {
+              //   console.log(
+              //     'Quiz state unchanged, not updating:',
+              //     messageReceived.payload.state
+              //   );
+              //   return; // Avoid unnecessary updates if state hasn't changed
+              // }
+              // updateQuizState(messageReceived.payload);
+              setQuizState(messageReceived.payload);
+
+              // Handle specific messages for query invalidation
+              switch (messageReceived.event) {
+                case 'QUESTION_COMPLETE':
+                case 'BUYOUT_COMPLETE':
+                  setAnswers([]);
+                  break;
+              }
             }
           } else if (messageReceived.event === 'UPDATE_PLAYERS') {
-            queryClient.refetchQueries({ queryKey: ['player', seatNumber] });
-            queryClient.refetchQueries({ queryKey: ['tiers'] });
             const updatedState = await fetchQuizState(serverIP);
             setQuizState(updatedState);
-          }
-           else {
-            console.warn('WebSocket message format not recognized:', messageReceived);
+          } else if (messageReceived.event === 'ANSWER') {
+            setAnswers(prevAnswers => {
+              // Check if the answer already exists to avoid duplicates
+              const existingAnswer = prevAnswers.find(
+                answer => answer.seat === messageReceived.payload.answer.seat
+              );
+              if (existingAnswer) {
+                console.warn(
+                  `Duplicate answer received for seat ${messageReceived.payload.answer.seat}, ignoring.`
+                );
+                return prevAnswers; // Return existing state without modification
+              }
+              console.log(
+                'New answer received:',
+                messageReceived.payload.answer
+              );
+              return [...prevAnswers, messageReceived.payload.answer];
+            });
+          } else {
+            console.warn(
+              'WebSocket message format not recognized:',
+              messageReceived
+            );
           }
         } catch (e) {
           console.error('Failed to parse WebSocket message:', e);
@@ -132,28 +146,35 @@ export const useWebSocket = () => {
       };
 
       // Handle error event properly
-      ws.onerror = (error) => {
+      ws.onerror = error => {
         console.error('WebSocket error occurred:', error);
         setStatus('error');
         setErrorDetails('A WebSocket connection error occurred');
       };
 
       // Handle close event properly
-      ws.onclose = (event) => {
-        console.log('WebSocket closed with code:', event.code, 'reason:', event.reason);
+      ws.onclose = event => {
+        console.log(
+          'WebSocket closed with code:',
+          event.code,
+          'reason:',
+          event.reason
+        );
         setStatus('disconnected');
         webSocketRef.current = null;
-        
+
         // Safely access event properties
         const code = event.code || 0;
         const reason = event.reason || 'Unknown reason';
-        
+
         if (reconnectAttemptsRef.current < MAX_RECONNECT_ATTEMPTS) {
           const delay = Math.min(
             INITIAL_RECONNECT_DELAY * Math.pow(2, reconnectAttemptsRef.current),
             MAX_RECONNECT_DELAY
           );
-          console.log(`Attempting to reconnect in ${delay/1000} seconds... (Attempt ${reconnectAttemptsRef.current + 1})`);
+          console.log(
+            `Attempting to reconnect in ${delay / 1000} seconds... (Attempt ${reconnectAttemptsRef.current + 1})`
+          );
           reconnectTimeoutRef.current = setTimeout(() => {
             reconnectAttemptsRef.current++;
             connect();
@@ -161,15 +182,17 @@ export const useWebSocket = () => {
         } else {
           console.error('Max WebSocket reconnect attempts reached.');
           setStatus('error');
-          setErrorDetails(`Max reconnect attempts reached. Last event code: ${code}, reason: ${reason}`);
+          setErrorDetails(
+            `Max reconnect attempts reached. Last event code: ${code}, reason: ${reason}`
+          );
         }
       };
     } catch (e) {
-      console.error("Error initializing WebSocket:", e);
+      console.error('Error initializing WebSocket:', e);
       setStatus('error');
       setErrorDetails(e instanceof Error ? e.message : String(e));
     }
-  }, [serverIP, seatNumber]);
+  }, [serverIP]);
 
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
@@ -186,9 +209,9 @@ export const useWebSocket = () => {
     // Note: We don't clear quizState here to prevent losing state on intentional disconnects
   }, []);
 
-  // When parameters change (serverIP, seatNumber), connect/disconnect as needed
+  // When parameters change (serverIP), connect/disconnect as needed
   useEffect(() => {
-    if (serverIP && seatNumber !== null) {
+    if (serverIP) {
       connect();
     } else {
       disconnect();
@@ -198,45 +221,63 @@ export const useWebSocket = () => {
     return () => {
       disconnect();
     };
-  }, [serverIP, seatNumber, connect, disconnect ]);
+  }, [serverIP, connect, disconnect]);
 
-	const sendMessage = useCallback((data: iCheckMessage | iAnswerMessage) => {
-		console.log('sendMessage called with data:', data);
-		console.log('webSocketRef.current:', webSocketRef.current);
-		console.log('webSocket readyState:', webSocketRef.current?.readyState);
-		console.log('WebSocket status:', status);
-		
-    if (webSocketRef.current && webSocketRef.current.readyState === 1) { // WebSocket.OPEN
-			let message: {data: iCheckMessage | iAnswerMessage;  event: string};
-      try {
-        // Type guard to determine message type
-        if ('answer' in data || 'pass' in data || 'boughtOut' in data) {
-          console.log('Sending answer message:', data);
-          message = {data, event: 'answer'};
-        } else {
-          console.log('Sending check message:', data);
-          message = {data, event: 'check'};
+  const sendMessage = useCallback(
+    (data: iCheckMessage | iAnswerState) => {
+      console.log('sendMessage called with data:', data);
+      console.log('webSocketRef.current:', webSocketRef.current);
+      console.log('webSocket readyState:', webSocketRef.current?.readyState);
+      console.log('WebSocket status:', status);
+
+      if (webSocketRef.current && webSocketRef.current.readyState === 1) {
+        // WebSocket.OPEN
+        let message: { data: iCheckMessage | iAnswerState; event: string };
+        try {
+          // Type guard to determine message type
+          if ('answer' in data || 'pass' in data || 'boughtOut' in data) {
+            console.log('Sending answer message:', data);
+            message = { data, event: 'answer' };
+          } else {
+            console.log('Sending check message:', data);
+            message = { data, event: 'check' };
+          }
+
+          console.log('Sending WebSocket message:', message);
+          webSocketRef.current.send(JSON.stringify(message));
+        } catch (e) {
+          console.error('Failed to send WebSocket message:', e);
         }
+      } else {
+        const readyState = webSocketRef.current?.readyState;
+        const readyStateText =
+          readyState === 0
+            ? 'CONNECTING'
+            : readyState === 1
+              ? 'OPEN'
+              : readyState === 2
+                ? 'CLOSING'
+                : readyState === 3
+                  ? 'CLOSED'
+                  : 'UNKNOWN';
+        console.warn(
+          `WebSocket is not ready. ReadyState: ${readyState} (${readyStateText}), Status: ${status}. Message not sent:`,
+          data
+        );
+      }
+    },
+    [status]
+  );
 
-				console.log('Sending WebSocket message:', message);
-				webSocketRef.current.send(JSON.stringify(message));
-			} catch (e) {
-				console.error('Failed to send WebSocket message:', e);
-			}
-		} else {
-			const readyState = webSocketRef.current?.readyState;
-			const readyStateText = readyState === 0 ? 'CONNECTING' : readyState === 1 ? 'OPEN' : readyState === 2 ? 'CLOSING' : readyState === 3 ? 'CLOSED' : 'UNKNOWN';
-			console.warn(`WebSocket is not ready. ReadyState: ${readyState} (${readyStateText}), Status: ${status}. Message not sent:`, data);
-		}
-	}, [status]);
-
-  return { 
-    status, 
-    quizState, 
-    setQuizState,  
-    errorDetails, 
-    sendMessage, 
-    connectWebSocket: connect, 
-    disconnectWebSocket: disconnect 
+  return {
+    status,
+    quizState,
+    setQuizState,
+    answers,
+    setAnswers,
+    errorDetails,
+    sendMessage,
+    connectWebSocket: connect,
+    disconnectWebSocket: disconnect,
   };
 };

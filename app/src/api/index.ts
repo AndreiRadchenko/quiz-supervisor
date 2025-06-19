@@ -1,4 +1,9 @@
-import { AppContextType, iQuizSate, SeatDataType, TierDataType } from '../types';
+import {
+  AppContextType,
+  iQuizSate,
+  SeatDataType,
+  TierDataType,
+} from '../types';
 import { useAppContext } from '../context/AppContext';
 
 const getBaseUrl = (serverIP: string | null) => {
@@ -9,23 +14,28 @@ const getBaseUrl = (serverIP: string | null) => {
   return `http://${serverIP}:5000`;
 };
 
-export const fetchQuizState = async (serverIP: string | null): Promise<iQuizSate | null> => {
+export const fetchQuizState = async (
+  serverIP: string | null
+): Promise<iQuizSate | null> => {
   const baseUrl = getBaseUrl(serverIP);
-  if (!baseUrl ) return null;
+  if (!baseUrl) return null;
 
   try {
     const response = await fetch(`${baseUrl}/game/state`);
     if (!response.ok) {
       throw new Error(`Failed to fetch quiz state: ${response.status}`);
     }
-    return await response.json() as iQuizSate;
+    return (await response.json()) as iQuizSate;
   } catch (error) {
-    console.error("Error fetching quiz state:", error);
+    console.error('Error fetching quiz state:', error);
     throw error; // Re-throw to be caught by TanStack Query
   }
 };
 
-export const fetchPlayerData = async (seatNumber: number, serverIP: string | null): Promise<SeatDataType | null> => {
+export const fetchPlayerData = async (
+  seatNumber: number,
+  serverIP: string | null
+): Promise<SeatDataType | null> => {
   const baseUrl = getBaseUrl(serverIP);
   if (!baseUrl || !seatNumber) return null;
 
@@ -34,14 +44,16 @@ export const fetchPlayerData = async (seatNumber: number, serverIP: string | nul
     if (!response.ok) {
       throw new Error(`Failed to fetch player data: ${response.status}`);
     }
-    return await response.json() as SeatDataType;
+    return (await response.json()) as SeatDataType;
   } catch (error) {
-    console.error("Error fetching player data:", error);
+    console.error('Error fetching player data:', error);
     throw error; // Re-throw to be caught by TanStack Query
   }
 };
 
-export const fetchTiersData = async (serverIP: string | null): Promise<TierDataType[]> => {
+export const fetchTiersData = async (
+  serverIP: string | null
+): Promise<TierDataType[]> => {
   const baseUrl = getBaseUrl(serverIP);
   if (!baseUrl) return [];
 
@@ -50,9 +62,9 @@ export const fetchTiersData = async (serverIP: string | null): Promise<TierDataT
     if (!response.ok) {
       throw new Error(`Failed to fetch tiers data: ${response.status}`);
     }
-    return await response.json() as TierDataType[];
+    return (await response.json()) as TierDataType[];
   } catch (error) {
-    console.error("Error fetching tiers data:", error);
+    console.error('Error fetching tiers data:', error);
     throw error; // Re-throw to be caught by TanStack Query
   }
 };

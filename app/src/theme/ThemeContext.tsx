@@ -20,9 +20,9 @@ export const ThemeProvider = (props: ThemeProviderProps) => {
   const { children, forcedColorScheme } = props;
   // Use system color scheme by default, but allow override
   const systemColorScheme = useColorScheme();
-  const colorScheme: ColorScheme = forcedColorScheme || 
-    (systemColorScheme === 'dark' ? 'dark' : 'light');
-  
+  const colorScheme: ColorScheme =
+    forcedColorScheme || (systemColorScheme === 'dark' ? 'dark' : 'light');
+
   const theme = createTheme(colorScheme);
   const isDark = colorScheme === 'dark';
 

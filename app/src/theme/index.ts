@@ -2,11 +2,11 @@
 export { ThemeProvider, useTheme } from './ThemeContext';
 export { createTheme, type Theme } from './theme';
 export { colors, type ColorScheme, type ColorToken } from './colors';
-export { 
-  spacing, 
-  borderRadius, 
-  fontSize, 
-  fontWeight, 
+export {
+  spacing,
+  borderRadius,
+  fontSize,
+  fontWeight,
   shadows,
   type SpacingToken,
   type BorderRadiusToken,

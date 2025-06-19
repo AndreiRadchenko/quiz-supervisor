@@ -6,8 +6,7 @@
   "singleQuote": true,
   "trailingComma": "es5",
   "bracketSpacing": true,
-  "jsxBracketSameLine": false,
+  "bracketSameLine": false,
   "arrowParens": "avoid",
-  "proseWrap": "always",
-  "plugins": ["prettier-plugin-tailwindcss", "prettier-plugin-classnames"]
+  "proseWrap": "always"
 }
