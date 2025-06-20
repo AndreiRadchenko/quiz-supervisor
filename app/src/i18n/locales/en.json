@@ -28,6 +28,7 @@
     "swipeGesturesMessage": "Swipe left for (YES) to add correct answer\nSwipe right for (NO) to reject",
     "gotIt": "Got it!",
     "currentTierLabel": "Current Tier:",
+    "questionLabel": "Question:",
     "noTierInformation": "No Tier Information",
     "stateLabel": "State:",
     "unknownState": "Unknown",
