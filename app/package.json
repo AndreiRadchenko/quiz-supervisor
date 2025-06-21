@@ -9,7 +9,10 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "build:aab": "eas build -p android --local --profile preview",
+    "build:apk": "eas build -p android --local --profile preview-apk",
+    "aab-to-apk": "java -jar bundletool.jar build-apks --bundle=dist/*.aab --output=dist/app.apks --mode=universal && unzip -o dist/app.apks -d dist/ && mv dist/universal.apk dist/app-universal.apk"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.1.2",

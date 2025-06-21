@@ -159,7 +159,7 @@ const DefaultScreen = () => {
     },
     section: {
       flex: 1,
-      marginBottom: theme.spacing.lg,
+      marginBottom: theme.spacing['2xl'],
     },
     sectionHeader: {
       flexDirection: 'row',

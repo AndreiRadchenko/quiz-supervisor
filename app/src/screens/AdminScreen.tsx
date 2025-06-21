@@ -102,7 +102,6 @@ const AdminScreen = () => {
       ...theme.components.text.body,
       fontWeight: theme.fontWeight.medium,
       marginBottom: theme.spacing.xs,
-      marginTop: theme.spacing.md,
     },
     input: {
       ...theme.components.input,

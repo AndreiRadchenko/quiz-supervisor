@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, PanResponder, Animated } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  PanResponder,
+  Animated,
+  Image,
+} from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme';
-import { iAnswerState } from '../types';
 
 interface AnswerItemProps {
   item: string;
@@ -95,7 +101,7 @@ export const AnswerItem: React.FC<AnswerItemProps> = ({
       backgroundColor: '#10B981', // Green color
     },
     rightBackground: {
-      backgroundColor: theme.colors.accent,
+      backgroundColor: theme.colors.destructiveHover,
     },
     swipeLabelRight: {
       fontSize: 20,
@@ -114,7 +120,11 @@ export const AnswerItem: React.FC<AnswerItemProps> = ({
       alignSelf: 'flex-start',
     },
     answerItem: {
-      backgroundColor: theme.colors.destructive,
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      backgroundColor: theme.colors.primaryActive,
       padding: 15,
       borderRadius: 8,
       elevation: 2,
@@ -150,6 +160,10 @@ export const AnswerItem: React.FC<AnswerItemProps> = ({
       color: theme.colors.destructiveForeground,
       marginBottom: 4,
     },
+    ArrowIcon: {
+      width: 48,
+      height: 48,
+    },
   });
 
   return (
@@ -181,12 +195,20 @@ export const AnswerItem: React.FC<AnswerItemProps> = ({
         style={[styles.answerItem, animatedStyle]}
         {...panResponder.panHandlers}
       >
+        <Image
+          source={require('../assets/images/arrows-right-01.png')}
+          style={styles.ArrowIcon}
+        />
         <View style={styles.answerContent}>
           <Text style={styles.answerLabel}>
             {t('defaultScreen.userAnswerLabel')}
           </Text>
           <Text style={styles.userAnswer}>{item}</Text>
         </View>
+        <Image
+          source={require('../assets/images/arrows-left-01.png')}
+          style={styles.ArrowIcon}
+        />
       </Animated.View>
     </View>
   );

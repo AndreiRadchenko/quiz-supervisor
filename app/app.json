@@ -12,7 +12,16 @@
         "expo-build-properties",
         {
           "android": {
-            "usesCleartextTraffic": true
+            "usesCleartextTraffic": true,
+            "minifyEnabled": true,
+            "shrinkResources": true,
+            "enableProguardInReleaseBuilds": true,
+            "packagingOptions": {
+              "pickFirst": [
+                "**/libc++_shared.so",
+                "**/libjsc.so"
+              ]
+            }
           }
         }
       ]
@@ -21,16 +30,16 @@
     "slug": "quizSupervisor",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/logo-square.png",
+    "icon": "./assets/logo-square-01.png",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "backgroundColor": "#1a1a1a",
     "splash": {
-      "image": "./assets/logo-square.png",
+      "image": "./assets/logo-square-01.png",
       "resizeMode": "cover",
       "backgroundColor": "#1a1a1a",
       "dark": {
-        "image": "./assets/logo-square.png",
+        "image": "./assets/logo-square-01.png",
         "resizeMode": "cover",
         "backgroundColor": "#1a1a1a"
       }
@@ -53,29 +62,33 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/logo-square.png",
+        "foregroundImage": "./assets/logo-square-01.png",
         "backgroundColor": "#1a1a1a"
       },
       "backgroundColor": "#1a1a1a",
       "splash": {
-        "image": "./assets/logo-square.png",
+        "image": "./assets/logo-square-01.png",
         "resizeMode": "cover",
         "backgroundColor": "#1a1a1a",
         "dark": {
-          "image": "./assets/logo-square.png",
+          "image": "./assets/logo-square-01.png",
           "resizeMode": "cover",
           "backgroundColor": "#1a1a1a"
         }
       },
-      "package": "com.andriiradchenko.quizPlayer"
+      "package": "com.andriiradchenko.quizPlayer",
+      "versionCode": 3,
+      "enableProguardInReleaseBuilds": true,
+      "enableSeparateBuildPerCPUArchitecture": true
     },
     "web": {
-      "favicon": "./assets/logo-square.png",
+      "favicon": "./assets/logo-square-01.png",
       "backgroundColor": "#1a1a1a"
     },
     "extra": {
+      "router": {},
       "eas": {
-        "projectId": "9fd7a24f-e33c-4210-b521-b73cb970ccab"
+        "projectId": "0012d5c4-9b20-4830-9c5d-2d1bce7af760"
       }
     }
   }

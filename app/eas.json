@@ -19,6 +19,18 @@
       "developmentClient": false,
       "distribution": "internal",
       "android": {
+        "buildType": "app-bundle",
+        "gradleCommand": ":app:bundleRelease"
+      },
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    "preview-apk": {
+      "autoIncrement": true,
+      "developmentClient": false,
+      "distribution": "internal",
+      "android": {
         "buildType": "apk",
         "gradleCommand": ":app:assembleRelease"
       },
