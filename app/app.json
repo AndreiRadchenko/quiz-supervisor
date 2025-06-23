@@ -76,8 +76,8 @@
           "backgroundColor": "#1a1a1a"
         }
       },
-      "package": "com.andriiradchenko.quizPlayer",
-      "versionCode": 3,
+      "package": "com.andriiradchenko.quizSupervisor",
+      "versionCode": 4,
       "enableProguardInReleaseBuilds": true,
       "enableSeparateBuildPerCPUArchitecture": true
     },
