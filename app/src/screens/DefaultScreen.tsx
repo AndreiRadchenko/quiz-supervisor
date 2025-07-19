@@ -21,13 +21,26 @@ const DefaultScreen = () => {
   const { t } = useTranslation();
   const { theme } = useTheme();
   const { serverIP } = useAppContext();
-  const { quizState, answers, setAnswers } = useWebSocketContext();
+  const { quizState, answers, setAnswers, tiers } = useWebSocketContext();
   const [removingItems, setRemovingItems] = useState<Set<string>>(new Set());
   const [displayItems, setDisplayItems] = useState<string[]>([]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      const filteredAnswers = answers.filter(a => a.isCorrect === false);
+      const questionType = tiers.find(
+        tier => tier.idx === quizState?.tierNumber
+      )?.question?.questionType;
+
+      const filteredAnswers =
+        questionType === 'TEXT'
+          ? answers.filter(
+              a =>
+                a.isCorrect === false &&
+                a.pass !== true &&
+                a.answer.trim() !== ''
+            )
+          : [];
+
       const uniqueIncorrectAnswers = Array.from(
         new Set(filteredAnswers.map(a => a.answer))
       );
@@ -38,7 +51,7 @@ const DefaultScreen = () => {
     }, 300);
 
     return () => clearTimeout(timeout);
-  }, [answers, removingItems]);
+  }, [answers, removingItems, tiers, quizState]);
 
   const handleSwipeLeft = useCallback(
     async (answer: string) => {

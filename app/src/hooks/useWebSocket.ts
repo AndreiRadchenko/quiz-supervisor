@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { iQuizSate, iCheckMessage, iAnswerState } from '../types';
-import { fetchQuizState } from '../api';
+import { iQuizSate, iCheckMessage, iAnswerState, TierDataType } from '../types';
+import { fetchQuizState, fetchTiersData } from '../api';
 export type WebSocketStatus =
   | 'connecting'
   | 'connected'
@@ -16,6 +16,7 @@ export const useWebSocket = () => {
   const [status, setStatus] = useState<WebSocketStatus>('disconnected');
   const [quizState, setQuizState] = useState<iQuizSate | null>(null);
   const [answers, setAnswers] = useState<iAnswerState[]>([]);
+  const [tiers, setTiers] = useState<TierDataType[]>([]);
   const [errorDetails, setErrorDetails] = useState<string | null>(null); // Changed to string only
   const webSocketRef = useRef<WebSocket | null>(null);
   const reconnectAttemptsRef = useRef(0);
@@ -95,14 +96,6 @@ export const useWebSocket = () => {
               messageReceived.payload &&
               typeof messageReceived.payload === 'object'
             ) {
-              // if (messageReceived.payload.state === quizState?.state) {
-              //   console.log(
-              //     'Quiz state unchanged, not updating:',
-              //     messageReceived.payload.state
-              //   );
-              //   return; // Avoid unnecessary updates if state hasn't changed
-              // }
-              // updateQuizState(messageReceived.payload);
               setQuizState(messageReceived.payload);
 
               // Handle specific messages for query invalidation
@@ -110,6 +103,10 @@ export const useWebSocket = () => {
                 case 'QUESTION_COMPLETE':
                 case 'BUYOUT_COMPLETE':
                   setAnswers([]);
+                  break;
+                case 'QUESTION_PRE':
+                  const tiersData = await fetchTiersData(serverIP);
+                  setTiers(tiersData);
                   break;
               }
             }
@@ -128,10 +125,6 @@ export const useWebSocket = () => {
                 );
                 return prevAnswers; // Return existing state without modification
               }
-              console.log(
-                'New answer received:',
-                messageReceived.payload.answer
-              );
               return [...prevAnswers, messageReceived.payload.answer];
             });
           } else {
@@ -275,6 +268,8 @@ export const useWebSocket = () => {
     setQuizState,
     answers,
     setAnswers,
+    tiers,
+    setTiers,
     errorDetails,
     sendMessage,
     connectWebSocket: connect,

@@ -196,7 +196,7 @@ export const AnswerItem: React.FC<AnswerItemProps> = ({
         {...panResponder.panHandlers}
       >
         <Image
-          source={require('../assets/images/arrows-right-01.png')}
+          source={require('../assets/images/arrows-right-02.png')}
           style={styles.ArrowIcon}
         />
         <View style={styles.answerContent}>
@@ -206,7 +206,7 @@ export const AnswerItem: React.FC<AnswerItemProps> = ({
           <Text style={styles.userAnswer}>{item}</Text>
         </View>
         <Image
-          source={require('../assets/images/arrows-left-01.png')}
+          source={require('../assets/images/arrows-left-02.png')}
           style={styles.ArrowIcon}
         />
       </Animated.View>
