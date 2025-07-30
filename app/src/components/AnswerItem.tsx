@@ -30,12 +30,14 @@ export const AnswerItem: React.FC<AnswerItemProps> = ({
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
+      flex: 1,
     },
     answerText: {
-      fontSize: theme.fontSize.xl,
+      width: '60%',
+      fontSize: theme.fontSize['xl'],
       color: theme.colors.destructiveForeground,
-      flex: 1,
       textAlign: 'center',
+      flexWrap: 'wrap',
     },
     button: {
       width: 100,

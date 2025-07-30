@@ -179,11 +179,6 @@ const DefaultScreen = () => {
             <Text style={styles.sectionTitle}>
               {t('defaultScreen.incorrectAnswersTitle')}
             </Text>
-            <TouchableOpacity onPress={showTip} style={styles.tipButton}>
-              <Text style={styles.tipText}>
-                {t('defaultScreen.tipButtonText')}
-              </Text>
-            </TouchableOpacity>
           </View>
           <Text style={styles.tipDescription}>
             {t('defaultScreen.swipeInstructions')}

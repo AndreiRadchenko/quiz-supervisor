@@ -26,8 +26,10 @@ export const AppContext = createContext<AppContextType>(defaultContextValues);
 export const AppProvider: React.FC<{ children: ReactElement }> = ({
   children,
 }) => {
-  const [serverIP, setServerIPState] = useState<string | null>(null);
-  const [locale, setLocaleState] = useState<'en' | 'uk'>('en');
+  const [serverIP, setServerIPState] = useState<string | null>(
+    '192.168.29.100'
+  );
+  const [locale, setLocaleState] = useState<'en' | 'uk'>('uk');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
