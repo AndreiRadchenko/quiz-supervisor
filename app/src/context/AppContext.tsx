@@ -14,8 +14,8 @@ const SERVER_IP_KEY = 'app.serverIP';
 const LOCALE_KEY = 'settings.lang'; // Same as in i18n
 
 const defaultContextValues: AppContextType = {
-  serverIP: null,
-  locale: 'en',
+  serverIP: '192.168.29.100',
+  locale: 'uk',
   setServerIP: () => {},
   setLocale: () => {},
 };
