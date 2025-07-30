@@ -38,7 +38,11 @@ export const AppProvider: React.FC<{ children: ReactElement }> = ({
         const storedIP = await AsyncStorage.getItem(SERVER_IP_KEY);
         const storedLocale = await AsyncStorage.getItem(LOCALE_KEY);
 
-        if (storedIP) setServerIPState(storedIP);
+        if (storedIP) {
+          setServerIPState(storedIP);
+        } else {
+          setServerIPState('192.168.29.100');
+        }
         if (storedLocale) {
           const parsedLocale = storedLocale as 'en' | 'uk';
           setLocaleState(parsedLocale);
