@@ -32,10 +32,12 @@
     "unknownState": "Невідомо",
     "incorrectAnswersTitle": "Неправильні відповіді",
     "tipButtonText": "?",
-    "swipeInstructions": "Свайп ліворуч (ТАК) для додавання правильної відповіді.",
+    "swipeInstructions": "Використовуйте кнопки під відповіддю, щоб позначити їх як вірні або невірні",
     "noIncorrectAnswers": "Немає неправильних відповідей для перегляду",
     "yes": "ТАК",
-    "no": "НІ"
+    "no": "НІ",
+    "correct": "Вірно",
+    "incorrect": "Невірно"
   },
   "errors": {
     "playerDataError": "Помилка завантаження даних гравця.",

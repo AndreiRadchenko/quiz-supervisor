@@ -14,8 +14,8 @@ const SERVER_IP_KEY = 'app.serverIP';
 const LOCALE_KEY = 'settings.lang'; // Same as in i18n
 
 const defaultContextValues: AppContextType = {
-  serverIP: null,
-  locale: 'en',
+  serverIP: '192.168.29.100',
+  locale: 'uk',
   setServerIP: () => {},
   setLocale: () => {},
 };
@@ -26,8 +26,10 @@ export const AppContext = createContext<AppContextType>(defaultContextValues);
 export const AppProvider: React.FC<{ children: ReactElement }> = ({
   children,
 }) => {
-  const [serverIP, setServerIPState] = useState<string | null>(null);
-  const [locale, setLocaleState] = useState<'en' | 'uk'>('en');
+  const [serverIP, setServerIPState] = useState<string | null>(
+    '192.168.29.100'
+  );
+  const [locale, setLocaleState] = useState<'en' | 'uk'>('uk');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -36,7 +38,11 @@ export const AppProvider: React.FC<{ children: ReactElement }> = ({
         const storedIP = await AsyncStorage.getItem(SERVER_IP_KEY);
         const storedLocale = await AsyncStorage.getItem(LOCALE_KEY);
 
-        if (storedIP) setServerIPState(storedIP);
+        if (storedIP) {
+          setServerIPState(storedIP);
+        } else {
+          setServerIPState('192.168.29.100');
+        }
         if (storedLocale) {
           const parsedLocale = storedLocale as 'en' | 'uk';
           setLocaleState(parsedLocale);

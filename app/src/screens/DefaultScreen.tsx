@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -6,7 +6,6 @@ import {
   FlatList,
   TouchableOpacity,
   Alert,
-  Animated,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useWebSocketContext } from '../context/WebSocketContext';
@@ -22,43 +21,30 @@ const DefaultScreen = () => {
   const { theme } = useTheme();
   const { serverIP } = useAppContext();
   const { quizState, answers, setAnswers, tiers } = useWebSocketContext();
-  const [removingItems, setRemovingItems] = useState<Set<string>>(new Set());
   const [displayItems, setDisplayItems] = useState<string[]>([]);
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      const questionType = tiers.find(
-        tier => tier.idx === quizState?.tierNumber
-      )?.question?.questionType;
+    const questionType = tiers.find(tier => tier.idx === quizState?.tierNumber)
+      ?.question?.questionType;
 
-      const filteredAnswers =
-        questionType === 'TEXT'
-          ? answers.filter(
-              a =>
-                a.isCorrect === false &&
-                a.pass !== true &&
-                a.answer.trim() !== ''
-            )
-          : [];
+    const filteredAnswers =
+      questionType === 'TEXT'
+        ? answers.filter(
+            a =>
+              a.isCorrect === false && a.pass !== true && a.answer.trim() !== ''
+          )
+        : [];
 
-      const uniqueIncorrectAnswers = Array.from(
-        new Set(filteredAnswers.map(a => a.answer))
-      );
-      const visibleAnswers = uniqueIncorrectAnswers.filter(
-        answer => !removingItems.has(answer)
-      );
-      setDisplayItems(visibleAnswers);
-    }, 300);
+    const uniqueIncorrectAnswers = Array.from(
+      new Set(filteredAnswers.map(a => a.answer))
+    );
 
-    return () => clearTimeout(timeout);
-  }, [answers, removingItems, tiers, quizState]);
+    setDisplayItems(uniqueIncorrectAnswers);
+  }, [answers, tiers, quizState]);
 
   const handleSwipeLeft = useCallback(
     async (answer: string) => {
       if (quizState?.questionLabel) {
-        // Mark item as being removed for animation
-        setRemovingItems(prev => new Set([...prev, answer]));
-
         const matchingAnswers = answers.filter(
           a => a.answer === answer && !a.isCorrect
         );
@@ -71,93 +57,40 @@ const DefaultScreen = () => {
             serverIP
           );
           await setAnswersCorrect(seats, serverIP);
+
+          // Remove item immediately from display and data
+          setDisplayItems(prev => prev.filter(i => i !== answer));
+          setAnswers(prev => prev.filter(a => a.answer !== answer));
         } catch (error) {
-          // If API call fails, remove the removing state
-          setRemovingItems(prev => {
-            const newSet = new Set(prev);
-            newSet.delete(answer);
-            return newSet;
-          });
           console.error('Error updating answer:', error);
         }
       }
     },
-    [quizState, serverIP, answers]
+    [quizState, serverIP, answers, setAnswers]
   );
 
-  const handleSwipeRight = useCallback((answer: string) => {
-    setRemovingItems(prev => new Set([...prev, answer]));
-  }, []);
+  const handleSwipeRight = useCallback(
+    (answer: string) => {
+      // Remove item immediately without animation
+      setDisplayItems(prev => prev.filter(i => i !== answer));
+      setAnswers(prev => prev.filter(a => a.answer !== answer));
+    },
+    [setAnswers]
+  );
 
   const showTip = () => {
     Alert.alert(
       t('defaultScreen.swipeGesturesTitle'),
-      t('defaultScreen.swipeGesturesMessage'),
+      t('defaultScreen.swipeInstructions'),
       [{ text: t('defaultScreen.gotIt') }]
     );
   };
 
-  const AnimatedAnswerItem = ({
-    item,
-    onAnimationComplete,
-  }: {
-    item: string;
-    onAnimationComplete: (item: string) => void;
-  }) => {
-    const [fadeAnim] = useState(new Animated.Value(1));
-    const [scaleAnim] = useState(new Animated.Value(1));
-    const isRemoving = removingItems.has(item);
-
-    useEffect(() => {
-      if (isRemoving) {
-        Animated.parallel([
-          Animated.timing(fadeAnim, {
-            toValue: 0,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-          Animated.timing(scaleAnim, {
-            toValue: 0.8,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-        ]).start(() => {
-          // Only update list after animation is complete
-          onAnimationComplete(item);
-        });
-      }
-    }, [isRemoving]);
-
-    return (
-      <Animated.View
-        style={{
-          opacity: fadeAnim,
-          transform: [{ scale: scaleAnim }],
-        }}
-      >
-        <AnswerItem
-          item={item}
-          onSwipeLeft={handleSwipeLeft}
-          onSwipeRight={handleSwipeRight}
-        />
-      </Animated.View>
-    );
-  };
-
   const renderAnswerItem = ({ item }: { item: string }) => (
-    <AnimatedAnswerItem
+    <AnswerItem
       item={item}
-      onAnimationComplete={item => {
-        setTimeout(() => {
-          setDisplayItems(prev => prev.filter(i => i !== item));
-          setAnswers(prev => prev.filter(a => a.answer !== item));
-          setRemovingItems(prev => {
-            const newSet = new Set(prev);
-            newSet.delete(item);
-            return newSet;
-          });
-        }, 300);
-      }}
+      onSwipeLeft={handleSwipeLeft}
+      onSwipeRight={handleSwipeRight}
     />
   );
 
@@ -246,11 +179,6 @@ const DefaultScreen = () => {
             <Text style={styles.sectionTitle}>
               {t('defaultScreen.incorrectAnswersTitle')}
             </Text>
-            <TouchableOpacity onPress={showTip} style={styles.tipButton}>
-              <Text style={styles.tipText}>
-                {t('defaultScreen.tipButtonText')}
-              </Text>
-            </TouchableOpacity>
           </View>
           <Text style={styles.tipDescription}>
             {t('defaultScreen.swipeInstructions')}

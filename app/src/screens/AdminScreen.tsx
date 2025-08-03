@@ -209,7 +209,7 @@ const AdminScreen = () => {
           style={styles.input}
           value={inputServerIP}
           onChangeText={setInputServerIP}
-          placeholder="e.g., 192.168.1.100"
+          placeholder="e.g., 192.168.29.100"
           placeholderTextColor={theme.colors.mutedForeground}
           keyboardType="url"
           autoCorrect={false}

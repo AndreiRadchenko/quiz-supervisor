@@ -34,10 +34,12 @@
     "unknownState": "Unknown",
     "incorrectAnswersTitle": "Incorrect Answers",
     "tipButtonText": "?",
-    "swipeInstructions": "Swipe left for (YES) to add correct answer",
+    "swipeInstructions": "Use the buttons below each answer to mark them as correct or incorrect",
     "noIncorrectAnswers": "No incorrect answers to review",
     "yes": "YES",
-    "no": "NO"
+    "no": "NO",
+    "correct": "Correct",
+    "incorrect": "Incorrect"
   },
   "adminScreen": {
     "enterPassword": "Enter Admin Password",
